@@ -1,0 +1,12 @@
+{
+  "name": "assign-tool",
+  "version": "1.0.0",
+  "type": "commonjs",
+  "scripts": {
+    "assign": "node assignCourse.js",
+    "install": "npm install firebase-admin"
+  },
+  "dependencies": {
+    "firebase-admin": "^13.7.0"
+  }
+}
