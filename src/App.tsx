@@ -16,6 +16,7 @@ import Courses from "@/pages/Courses";
 import CourseDetail from "@/pages/CourseDetail";
 import Profile from "@/pages/Profile";
 import Schedule from "@/pages/Schedule";
+import VerifyCertificate from "@/pages/VerifyCertificate";
 import NotFound from "@/pages/NotFound";
 import { coursesCollection } from "@/firebase/firestore";
 import { seedCourses } from "@/firebase/seedCourses";
@@ -62,6 +63,7 @@ const AppContent = () => {
           <Route path="/schedule" element={<Schedule />} />
           <Route path="/profile" element={<Profile />} />
         </Route>
+        <Route path="/verify/:certificateId" element={<VerifyCertificate />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>

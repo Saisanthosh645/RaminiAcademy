@@ -18,10 +18,61 @@ import { useQueryClient } from "@tanstack/react-query";
 import { coursesRef, usersRef } from "@/firebase/firestore";
 import { updateDoc } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
+import { QRCodeCanvas } from "qrcode.react";
+import { collection, query, where, getDocs, addDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "@/firebase/firestore";
+import { COLLECTIONS } from "@/firebase/collections";
 
 const CertificateModal = ({ course, userProgress, userName, userId, onClose }: { course: Course; userProgress: CourseProgress; userName: string; userId: string; onClose: () => void }) => {
-  const certificateId = `NVLN-${course.id.substring(0,4).toUpperCase()}-${userId.substring(0,6).toUpperCase()}`;
+  const [certId, setCertId] = useState<string | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  
+  // Logic to fetch or create certificate ID
+  useEffect(() => {
+    const getOrCreateCert = async () => {
+      setIsGenerating(true);
+      try {
+        const certsRef = collection(db, COLLECTIONS.certificates);
+        const q = query(certsRef, where("userId", "==", userId), where("courseId", "==", course.id));
+        const snapshot = await getDocs(q);
+
+        if (!snapshot.empty) {
+          setCertId(snapshot.docs[0].data().id);
+        } else {
+          // In a real app, this should be done via Firebase Functions for security.
+          // For this example, we generate it here, but Security Rules will restrict this collection.
+          const randomHex = Math.random().toString(36).substring(2, 8).toUpperCase();
+          const courseCode = course.id.substring(0, 4).toUpperCase();
+          const newId = `RAMINI-${courseCode}-${randomHex}`;
+          
+          const verificationUrl = `${window.location.origin}/verify/${newId}`;
+          
+          await addDoc(certsRef, {
+            id: newId,
+            userId,
+            userName,
+            courseId: course.id,
+            courseName: course.title,
+            score: userProgress.quizScore,
+            dateOfIssue: new Date().toISOString(),
+            verificationUrl,
+            createdAt: serverTimestamp(),
+          });
+          
+          setCertId(newId);
+        }
+      } catch (error) {
+        console.error("Error managing certificate record:", error);
+      } finally {
+        setIsGenerating(false);
+      }
+    };
+    
+    getOrCreateCert();
+  }, [course.id, userId, userName, userProgress.quizScore]);
+
+  const verificationUrl = certId ? `${window.location.origin}/verify/${certId}` : "";
 
   const handleDownloadPDF = async () => {
     const element = document.getElementById("certificate-container");
@@ -80,14 +131,14 @@ const CertificateModal = ({ course, userProgress, userName, userId, onClose }: {
           <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-primary/40 rounded-br max-sm:hidden"></div>
           
           {/* Watermark Logo */}
-          <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none">
-            <Award className="w-96 h-96" />
+          <div className="absolute inset-0 flex items-center justify-center opacity-[0.05] pointer-events-none">
+            <img src="/favicon.ico" alt="" className="w-96 h-96 object-contain grayscale" />
           </div>
 
           <div className="relative z-10 text-center space-y-4 py-1">
             <div className="flex justify-center mb-3">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-primary to-accent shadow-lg shadow-primary/20 ring-2 ring-background">
-                <Award className="w-8 h-8 text-primary-foreground" />
+              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white shadow-lg shadow-primary/20 ring-4 ring-background overflow-hidden p-3">
+                <img src="/favicon.ico" alt="Ramini Academy" className="w-full h-full object-contain" />
               </div>
             </div>
             
@@ -137,9 +188,29 @@ const CertificateModal = ({ course, userProgress, userName, userId, onClose }: {
           </div>
         </div>
 
+        {/* Verification Info & QR */}
+        <div className="absolute bottom-4 left-6 flex items-center gap-4 z-20">
+          {verificationUrl && (
+            <div className="p-1 bg-white rounded-lg shadow-sm">
+              <QRCodeCanvas 
+                value={verificationUrl} 
+                size={60} 
+                level="H"
+                includeMargin={false}
+              />
+            </div>
+          )}
+          <div className="flex flex-col">
+            <p className="text-[8px] text-muted-foreground uppercase tracking-widest leading-none mb-1">Verify Authenticity</p>
+            <p className="text-[9px] font-mono text-primary/80 truncate max-w-[200px]">
+              {verificationUrl.replace(/^https?:\/\//, '')}
+            </p>
+          </div>
+        </div>
+
         {/* Certificate ID */}
         <div className="absolute bottom-2 right-4 sm:bottom-4 sm:right-6 text-[10px] text-muted-foreground/60 font-mono tracking-widest z-20">
-          ID: {certificateId}
+          ID: {certId || "GENERATING..."}
         </div>
 
         {/* Action Buttons - Hidden during canvas capture mostly via z-index or out of bounds, but we can explicitly hide */}

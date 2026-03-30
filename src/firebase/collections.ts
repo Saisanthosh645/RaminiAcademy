@@ -4,6 +4,7 @@
 export const COLLECTIONS = {
   users: "users",
   courses: "courses",
+  certificates: "certificates",
 } as const;
 
 export const userDocPath = (uid: string) => `${COLLECTIONS.users}/${uid}`;

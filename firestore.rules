@@ -18,6 +18,12 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Certificates — public read for verification, write only via Admin (Functions)
+    match /certificates/{certId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
     // Deny everything else by default
     match /{document=**} {
       allow read, write: if false;

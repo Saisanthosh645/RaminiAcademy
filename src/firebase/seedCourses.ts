@@ -2,7 +2,7 @@ import { setDoc } from "firebase/firestore";
 import { coursesRef } from "@/firebase/firestore";
 import type { Course } from "@/types/firebase";
 
-const instructor = "Ramini Sai Santhosh";
+const instructor = "Ramini Academy";
 
 const courses: Course[] = [
   {

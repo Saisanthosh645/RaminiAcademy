@@ -114,5 +114,17 @@ export interface User {
   createdAt: Date;
 }
 
+export interface Certificate {
+  id: string; // The RAMINI-... ID
+  userId: string;
+  userName: string;
+  courseId: string;
+  courseName: string;
+  score: number;
+  dateOfIssue: string; // ISO string
+  verificationUrl: string;
+  qrCode?: string; // Base64 image
+}
+
 export type { FirebaseUser } from "../firebase/auth";
 
