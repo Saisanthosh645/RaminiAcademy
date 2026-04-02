@@ -25,11 +25,19 @@ export interface Announcement {
   priority: "normal" | "urgent";
 }
 
+export interface QuizTestCase {
+  input: string;
+  expectedOutput: string;
+}
+
 export interface QuizQuestion {
   id: string;
   question: string;
-  options: string[];
-  correctAnswer: number;
+  type?: "multiple-choice" | "coding";
+  options: string[]; // Options for multiple choice
+  correctAnswer: number; // Index for multiple choice
+  starterCode?: string; // Starter code for coding question
+  testCases?: QuizTestCase[]; // Test cases for coding question
 }
 
 export interface Quiz {

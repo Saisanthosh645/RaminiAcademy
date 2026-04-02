@@ -59,7 +59,20 @@ const courses: Course[] = [
       { id: "q5", question: "What is OOP?", options: ["Object Oriented Programming", "Output Operation Programming", "Online Order Processing", "Open Operator Platform"], correctAnswer: 0 },
       { id: "q6", question: "Which keyword is used for importing?", options: ["import", "include", "use", "require"], correctAnswer: 0 },
       { id: "q7", question: "What is the purpose of 'def'?", options: ["Define variables", "Define functions", "Define classes", "Default value"], correctAnswer: 1 },
-      { id: "q8", question: "How many data types are in Python?", options: ["3", "4", "5", "More than 5"], correctAnswer: 3 }
+      { id: "q8", question: "How many data types are in Python?", options: ["3", "4", "5", "More than 5"], correctAnswer: 3 },
+      { 
+        id: "q9", 
+        question: "Write a function `find_max(numbers)` that returns the largest number in a list of integers.", 
+        type: "coding",
+        options: [], 
+        correctAnswer: -1, 
+        starterCode: "def find_max(numbers):\n    # Write your logic here\n    pass",
+        testCases: [
+          { input: "[1, 5, 2]", expectedOutput: "5" },
+          { input: "[-10, -5, -20]", expectedOutput: "-5" },
+          { input: "[42]", expectedOutput: "42" }
+        ]
+      }
     ] }
   },
   {

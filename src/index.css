@@ -144,3 +144,69 @@
   }
 }
 
+/* Prism Editor Theme (Sleek Dark) */
+.prism-editor-wrapper {
+  background: #1e1e1e !important;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  transition: all 0.2s ease;
+  font-size: 14px;
+}
+.prism-editor-wrapper:focus-within {
+  border-color: hsl(var(--primary)) !important;
+  box-shadow: 0 0 20px hsla(190, 90%, 50%, 0.1);
+}
+.prism-editor-wrapper textarea {
+  outline: none !important;
+  padding: 1rem !important;
+}
+.prism-editor-wrapper pre {
+  padding: 1rem !important;
+  margin: 0 !important;
+}
+
+/* Code Syntax Colors (Dracula-inspired) */
+.token.comment, .token.prolog, .token.doctype, .token.cdata { color: #6272a4; }
+.token.punctuation { color: #f8f8f2; }
+.token.namespace { opacity: .7; }
+.token.property, .token.tag, .token.constant, .token.symbol, .token.deleted { color: #ff79c6; }
+.token.boolean, .token.number { color: #bd93f9; }
+.token.selector, .token.attr-name, .token.string, .token.char, .token.builtin, .token.inserted { color: #50fa7b; }
+.token.operator, .token.entity, .token.url, .variable { color: #f8f8f2; }
+.token.atrule, .token.attr-value, .token.function, .token.class-name { color: #f1fa8c; }
+.token.keyword { color: #8be9fd; font-style: italic; }
+.token.regex, .token.important { color: #ffb86c; }
+
+/* Terminal Styles */
+.terminal-output {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  background: #0d1117;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #30363d;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+.terminal-header {
+  background: #161b22;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid #30363d;
+}
+.terminal-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+.terminal-dot.red { background: #ff5f56; }
+.terminal-dot.yellow { background: #ffbd2e; }
+.terminal-dot.green { background: #27c93f; }
+.terminal-content {
+  padding: 16px;
+  max-height: 250px;
+  overflow-y: auto;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
