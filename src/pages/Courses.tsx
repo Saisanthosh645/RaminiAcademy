@@ -24,9 +24,13 @@ import {
   IndianRupee,
   BookOpen,
   AlertCircle,
+  Trophy,
+  ArrowLeft,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { Course } from "@/types/firebase";
+import { Certificate } from "@/components/Certificate";
+import QRCode from "qrcode.react";
 
 const Courses = () => {
   const navigate = useNavigate();
@@ -36,6 +40,7 @@ const Courses = () => {
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [paidCourses, setPaidCourses] = useState<string[]>(user?.paidCourses || []);
   const [isEnrolling, setIsEnrolling] = useState(false);
+  const [showSampleCert, setShowSampleCert] = useState(false);
 
   useEffect(() => {
     // Fetch all courses from Firebase
@@ -73,6 +78,7 @@ const Courses = () => {
           <AnimatePresence>
             {allCourses.map((course, i) => {
               const isPaid = isPurchased(course.id);
+              const discount = course.originalPrice ? Math.round(((course.originalPrice - course.price) / course.originalPrice) * 100) : 0;
 
               return (
                 <motion.div
@@ -84,17 +90,31 @@ const Courses = () => {
                   className="h-full"
                 >
                   <Card className="glass-card rounded-2xl overflow-hidden group h-full flex flex-col hover:shadow-lg transition-shadow relative border border-border/50">
-                    {/* Badge */}
-                    <div className="absolute top-4 right-4 z-10 flex gap-2">
-                      {isPaid && (
-                        <Badge className="gradient-bg text-primary-foreground gap-1">
-                          <CheckCircle2 className="w-3 h-3" /> Purchased
+                    {/* Badges */}
+                    <div className="absolute top-4 right-4 z-10 flex flex-col items-end gap-2">
+                      <div className="flex gap-2">
+                        {isPaid && (
+                          <Badge className="gradient-bg text-primary-foreground gap-1">
+                            <CheckCircle2 className="w-3 h-3" /> Purchased
+                          </Badge>
+                        )}
+                        <Badge variant="outline" className="bg-background shadow-sm border-border/50">
+                          {course.level}
                         </Badge>
+                      </div>
+                      {discount > 0 && (
+                        <div className="px-2.5 py-1 rounded-full bg-green-500 text-white text-[10px] font-black uppercase tracking-wider shadow-lg shadow-green-500/30 border border-white/10">
+                          {discount}% OFF
+                        </div>
                       )}
-                      <Badge variant="outline" className="bg-background">
-                        {course.level}
-                      </Badge>
                     </div>
+
+                    {course.isBestSeller && (
+                      <div className="absolute top-4 left-4 z-10 px-2.5 py-1 rounded-full bg-amber-500 text-white text-[10px] font-black uppercase tracking-wider shadow-lg shadow-amber-500/30 border border-white/10 flex items-center gap-1">
+                        <Award className="w-3 h-3" />
+                        Best Seller
+                      </div>
+                    )}
 
                     {/* Thumbnail */}
                     <div className="relative h-48 overflow-hidden bg-gradient-to-br from-primary/20 to-accent/20">
@@ -137,9 +157,20 @@ const Courses = () => {
                       </div>
 
                       {/* Price */}
-                      <div className="flex items-baseline gap-1 pt-2 border-t border-border/30">
-                        <span className="text-3xl font-bold gradient-text">₹{course.price}</span>
-                        <span className="text-xs text-muted-foreground">one-time</span>
+                      <div className="flex items-center gap-3 pt-2 border-t border-border/30">
+                        <div className="bg-indigo-600 text-white px-3 py-1 rounded-lg font-black flex items-center gap-1 shadow-[0_0_15px_rgba(79,70,229,0.3)] text-base group-hover:scale-105 transition-transform duration-300 ring-1 ring-white/20">
+                          <span>₹</span>
+                          <span>{course.price}</span>
+                        </div>
+                        {course.originalPrice && (
+                          <span className="text-sm text-muted-foreground/40 line-through font-medium">
+                            ₹{course.originalPrice}
+                          </span>
+                        )}
+                        <div className="ml-auto flex flex-col items-end leading-none">
+                          <span className="text-[9px] uppercase tracking-tighter font-bold text-primary animate-pulse mb-0.5">Limited Time</span>
+                          <span className="text-[8px] uppercase tracking-tighter font-semibold text-muted-foreground opacity-30">one-time</span>
+                        </div>
                       </div>
                     </div>
 
@@ -178,20 +209,124 @@ const Courses = () => {
         </div>
       </div>
 
-      {/* Course Details Dialog */}
       <Dialog 
         open={!!selectedCourse} 
         onOpenChange={(open) => {
           if (!open) {
             setSelectedCourse(null);
-            setTimeout(() => setIsEnrolling(false), 300);
+            setTimeout(() => {
+              setIsEnrolling(false);
+              setShowSampleCert(false);
+            }, 300);
           }
         }}
       >
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           {selectedCourse && (
             <AnimatePresence mode="wait">
-              {!isEnrolling ? (
+              {isEnrolling ? (
+                <motion.div key="payment" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ duration: 0.2 }} className="space-y-6 flex flex-col items-center py-4">
+                  <div className="text-center space-y-2">
+                    <h2 className="text-2xl font-bold font-display gradient-text">Secure UPI Payment</h2>
+                    <p className="text-muted-foreground">{selectedCourse.title}</p>
+                    <div className="flex items-center justify-center gap-3 mt-4 mb-2">
+                      <div className="bg-indigo-600 text-white px-5 py-2 rounded-lg font-bold flex items-center gap-1.5 shadow-xl text-2xl">
+                        <span>₹</span>
+                        <span>{selectedCourse.price}</span>
+                      </div>
+                      {selectedCourse.originalPrice && (
+                        <div className="text-base text-muted-foreground line-through opacity-30">₹{selectedCourse.originalPrice}</div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="bg-white p-4 rounded-2xl shadow-sm border border-border/50">
+                    <img 
+                      src="/images/upi-qr.jpeg" 
+                      alt="UPI QR Code" 
+                      onError={(e) => { e.currentTarget.src = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=replace@upi&pn=Nova%20Learn'; }}
+                      className="w-48 h-48 object-contain rounded-lg" 
+                    />
+                  </div>
+                  
+                  <p className="text-sm text-center text-muted-foreground max-w-sm">
+                    Scan this QR code using PhonePe, Google Pay, Paytm, or any UPI app to pay easily.
+                  </p>
+
+                  <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-4 max-w-md w-full mt-4">
+                    <div className="flex gap-3">
+                      <AlertCircle className="w-6 h-6 text-destructive shrink-0 mt-0.5" />
+                      <div className="text-sm text-destructive font-medium">
+                        <p className="font-bold mb-1 uppercase tracking-wider text-xs">Mandatory Verification Step</p>
+                        <p className="leading-relaxed text-foreground/80">After payment, you must share the <span className="font-bold">transaction receipt</span>, <span className="font-bold">Course Name</span>, <span className="font-bold">Your Full Name</span>, and <span className="font-bold">Email ID</span> to our WhatsApp number to activate your course.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-3 w-full max-w-md mt-6">
+                    <Button variant="outline" className="flex-1 py-6 border-primary/20 hover:bg-primary/5" onClick={() => setIsEnrolling(false)}>
+                      Back to Details
+                    </Button>
+                    <a
+                      href={`https://wa.me/919063019758?text=${encodeURIComponent(`Hi, I have just paid for the course "${selectedCourse.title}".\n\nMy Details:\n- Name: ${user?.name || ""}\n- Email: ${user?.email || ""}\n- Amount Paid: ₹${selectedCourse.price}\n\n[Please find the payment receipt attached below.]`)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-[2] bg-[#25D366] hover:bg-[#20bd5a] text-white py-6 rounded-md font-bold flex items-center justify-center shadow-lg transition-transform hover:scale-[1.02] active:scale-[0.98]"
+                    >
+                      Share Receipt on WhatsApp
+                    </a>
+                  </div>
+                </motion.div>
+              ) : showSampleCert ? (
+                <motion.div 
+                  key="sample" 
+                  initial={{ opacity: 0, scale: 0.95 }} 
+                  animate={{ opacity: 1, scale: 1 }} 
+                  exit={{ opacity: 0, scale: 0.95 }} 
+                  transition={{ duration: 0.3 }}
+                  className="flex flex-col items-center gap-6"
+                >
+                  <div className="text-center space-y-1 mt-2">
+                    <h3 className="text-xl font-bold font-display text-foreground">Sample Certificate Preview</h3>
+                    <p className="text-sm text-muted-foreground">This is the globally-recognized award you'll earn upon completion.</p>
+                  </div>
+
+                  <div className="relative w-full max-w-[600px] mx-auto rounded-xl shadow-2xl bg-white overflow-hidden border border-border/50 dark:border-white/10 p-8 flex items-center justify-center">
+                    <div 
+                      className="w-full relative"
+                      style={{ height: 'calc(min(90vw - 80px, 500px) * 794 / 1123)' }}
+                    >
+                      <div 
+                        className="absolute left-1/2 top-0 -translate-x-1/2 origin-top"
+                        style={{
+                          transform: `scale(calc(min(90vw - 80px, 500px) / 1123))`,
+                          width: "1123px",
+                          height: "794px"
+                        }}
+                      >
+                        <Certificate 
+                          userName="JOHN DOE"
+                          courseTitle={selectedCourse.title}
+                          score={98}
+                          grade="Distinction"
+                          date={new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}
+                          certId="SAMPLE-CERT-2024-XXXX"
+                          verificationUrl="https://nova-learn.vercel.app/verify"
+                          isSample={true}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <Button 
+                    variant="outline" 
+                    className="w-full h-12 text-base border-primary/20 text-primary hover:bg-primary/5 gap-2"
+                    onClick={() => setShowSampleCert(false)}
+                  >
+                    <ArrowLeft className="w-4 h-4" /> Back to Details
+                  </Button>
+                </motion.div>
+              ) : (
                 <motion.div key="details" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }} className="space-y-6">
               {/* Header */}
               <div className="space-y-2">
@@ -263,21 +398,31 @@ const Courses = () => {
                 {/* Details Tab */}
                 <TabsContent value="details" className="space-y-4">
                   <div className="space-y-3">
-                    <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
+                    <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg border border-border/50">
                       <BookOpen className="w-5 h-5 text-primary" />
                       <div>
                         <p className="text-xs text-muted-foreground">Total Content</p>
                         <p className="font-semibold text-card-foreground">{selectedCourse.totalClasses} Classes + Recordings + Resources</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
-                      <Award className="w-5 h-5 text-accent" />
-                      <div>
-                        <p className="text-xs text-muted-foreground">Certification</p>
-                        <p className="font-semibold text-card-foreground">Certificate on Completion</p>
+                    <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border/50">
+                      <div className="flex items-center gap-3">
+                        <Award className="w-5 h-5 text-accent" />
+                        <div>
+                          <p className="text-xs text-muted-foreground">Certification</p>
+                          <p className="font-semibold text-card-foreground">Professional Certificate</p>
+                        </div>
                       </div>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-8 text-[11px] font-bold uppercase tracking-widest text-primary hover:text-primary hover:bg-primary/10 gap-1.5"
+                        onClick={() => setShowSampleCert(true)}
+                      >
+                        <Trophy className="w-3 h-3" /> View Sample
+                      </Button>
                     </div>
-                    <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
+                    <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg border border-border/50">
                       <Users className="w-5 h-5 text-primary" />
                       <div>
                         <p className="text-xs text-muted-foreground">Support</p>
@@ -292,10 +437,18 @@ const Courses = () => {
               <div className="space-y-4 pt-4 border-t border-border">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Total Price</p>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-4xl font-bold gradient-text">₹{selectedCourse.price}</span>
-                      <span className="text-sm text-muted-foreground">one-time payment</span>
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5 font-semibold opacity-70">Total Investment</p>
+                    <div className="flex items-center gap-2.5">
+                      <div className="bg-indigo-600 text-white px-3.5 py-1.5 rounded-md font-bold flex items-center gap-1.5 shadow-lg text-lg">
+                        <span>₹</span>
+                        <span>{selectedCourse.price}</span>
+                      </div>
+                      {selectedCourse.originalPrice && (
+                        <span className="text-sm text-muted-foreground line-through opacity-50">
+                          ₹{selectedCourse.originalPrice}
+                        </span>
+                      )}
+                      <span className="text-[10px] uppercase tracking-tighter font-semibold text-muted-foreground ml-auto opacity-40">one-time payment</span>
                     </div>
                   </div>
                 </div>
@@ -321,51 +474,6 @@ const Courses = () => {
                   </motion.div>
                 )}
               </div>
-                </motion.div>
-              ) : (
-                <motion.div key="payment" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ duration: 0.2 }} className="space-y-6 flex flex-col items-center py-4">
-                  <div className="text-center space-y-2">
-                    <h2 className="text-2xl font-bold font-display gradient-text">Secure UPI Payment</h2>
-                    <p className="text-muted-foreground">{selectedCourse.title}</p>
-                    <div className="text-4xl font-bold text-foreground mt-4 mb-2">₹{selectedCourse.price}</div>
-                  </div>
-
-                  <div className="bg-white p-4 rounded-2xl shadow-sm border border-border/50">
-                    <img 
-                      src="/images/upi-qr.jpeg" 
-                      alt="UPI QR Code" 
-                      onError={(e) => { e.currentTarget.src = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=replace@upi&pn=Nova%20Learn'; }}
-                      className="w-48 h-48 object-contain rounded-lg" 
-                    />
-                  </div>
-                  
-                  <p className="text-sm text-center text-muted-foreground max-w-sm">
-                    Scan this QR code using PhonePe, Google Pay, Paytm, or any UPI app to pay easily.
-                  </p>
-
-                  <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-4 max-w-md w-full mt-4">
-                    <div className="flex gap-3">
-                      <AlertCircle className="w-6 h-6 text-destructive shrink-0 mt-0.5" />
-                      <div className="text-sm text-destructive font-medium">
-                        <p className="font-bold mb-1 uppercase tracking-wider text-xs">Mandatory Verification Step</p>
-                        <p className="leading-relaxed text-foreground/80">After payment, you must share the <span className="font-bold">transaction receipt</span>, <span className="font-bold">Course Name</span>, <span className="font-bold">Your Full Name</span>, and <span className="font-bold">Email ID</span> to our WhatsApp number to activate your course.</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row gap-3 w-full max-w-md mt-6">
-                    <Button variant="outline" className="flex-1 py-6 border-primary/20 hover:bg-primary/5" onClick={() => setIsEnrolling(false)}>
-                      Back to Details
-                    </Button>
-                    <a
-                      href={`https://wa.me/919063019758?text=${encodeURIComponent(`Hi, I have just paid for the course "${selectedCourse.title}".\n\nMy Details:\n- Name: ${user?.name || ""}\n- Email: ${user?.email || ""}\n- Amount Paid: ₹${selectedCourse.price}\n\n[Please find the payment receipt attached below.]`)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex-[2] bg-[#25D366] hover:bg-[#20bd5a] text-white py-6 rounded-md font-bold flex items-center justify-center shadow-lg transition-transform hover:scale-[1.02] active:scale-[0.98]"
-                    >
-                      Share Receipt on WhatsApp
-                    </a>
-                  </div>
                 </motion.div>
               )}
             </AnimatePresence>

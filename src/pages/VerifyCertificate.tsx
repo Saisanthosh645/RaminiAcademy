@@ -61,53 +61,53 @@ const VerifyCertificate = () => {
         </div>
 
         {certificate ? (
-          <Card className="border-2 border-primary/20 shadow-2xl relative overflow-hidden">
+          <Card className="bg-white border-2 border-primary/20 shadow-2xl relative overflow-hidden text-slate-900 rounded-2xl">
             <div className="absolute top-0 right-0 p-4">
-              <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 px-3 py-1 text-sm font-semibold uppercase tracking-wider">
+              <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 px-3 py-1 text-sm font-semibold uppercase tracking-wider">
                 <CheckCircle2 className="w-4 h-4 mr-1.5" /> Valid
               </Badge>
             </div>
             
-            <CardHeader className="pt-8 pb-4 text-center border-b border-border/50">
+            <CardHeader className="pt-8 pb-4 text-center border-b border-slate-100">
               <CardTitle className="text-2xl font-black text-primary uppercase tracking-widest font-display italic">
                 Verified Achievement
               </CardTitle>
             </CardHeader>
             
             <CardContent className="space-y-8 pt-8 px-6 sm:px-10">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 text-left">
                 <div className="space-y-1.5 group">
-                  <div className="flex items-center text-xs font-semibold text-muted-foreground uppercase tracking-widest gap-2">
+                  <div className="flex items-center text-xs font-semibold text-slate-400 uppercase tracking-widest gap-2">
                     <User className="w-3.5 h-3.5" /> Recipient
                   </div>
-                  <p className="text-xl font-bold text-foreground group-hover:text-primary transition-colors">
+                  <p className="text-xl font-bold text-slate-900 group-hover:text-primary transition-colors">
                     {certificate.userName}
                   </p>
                 </div>
 
                 <div className="space-y-1.5 group">
-                  <div className="flex items-center text-xs font-semibold text-muted-foreground uppercase tracking-widest gap-2">
+                  <div className="flex items-center text-xs font-semibold text-slate-400 uppercase tracking-widest gap-2">
                     <BookOpen className="w-3.5 h-3.5" /> Course
                   </div>
-                  <p className="text-xl font-bold text-foreground group-hover:text-primary transition-colors">
+                  <p className="text-xl font-bold text-slate-900 group-hover:text-primary transition-colors">
                     {certificate.courseName}
                   </p>
                 </div>
 
                 <div className="space-y-1.5">
-                  <div className="flex items-center text-xs font-semibold text-muted-foreground uppercase tracking-widest gap-2">
+                  <div className="flex items-center text-xs font-semibold text-slate-400 uppercase tracking-widest gap-2">
                     <Award className="w-3.5 h-3.5" /> Certificate ID
                   </div>
-                  <p className="font-mono text-base font-medium text-foreground bg-muted/50 px-2 py-1 rounded">
+                  <p className="font-mono text-base font-medium text-slate-800 bg-slate-50 px-2 py-1 rounded">
                     {certificate.id}
                   </p>
                 </div>
 
                 <div className="space-y-1.5">
-                  <div className="flex items-center text-xs font-semibold text-muted-foreground uppercase tracking-widest gap-2">
+                  <div className="flex items-center text-xs font-semibold text-slate-400 uppercase tracking-widest gap-2">
                     <Calendar className="w-3.5 h-3.5" /> Date of Issue
                   </div>
-                  <p className="text-base font-medium text-foreground">
+                  <p className="text-base font-medium text-slate-800">
                     {new Date(certificate.dateOfIssue).toLocaleDateString(undefined, {
                       year: 'numeric',
                       month: 'long',
@@ -117,12 +117,12 @@ const VerifyCertificate = () => {
                 </div>
               </div>
 
-              <div className="pt-6 border-t border-border/50">
+              <div className="pt-6 border-t border-slate-100">
                 <div className="bg-primary/5 rounded-xl p-4 flex items-start gap-4">
                   <ShieldCheck className="w-6 h-6 text-primary shrink-0 mt-1" />
                   <div className="space-y-1">
                     <p className="text-sm font-semibold text-primary">Official Record</p>
-                    <p className="text-xs text-muted-foreground leading-relaxed">
+                    <p className="text-xs text-slate-500 leading-relaxed">
                       This certificate is an official document from Ramini Academy. It confirms the completion of the mentioned course and verification of the recipient's identity through our secure platform.
                     </p>
                   </div>
@@ -154,8 +154,7 @@ const VerifyCertificate = () => {
             © {new Date().getFullYear()} Ramini Academy. All rights reserved.
           </p>
           <div className="flex justify-center gap-6 grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all">
-             {/* Small logo placeholder */}
-             <img src="/favicon.ico" alt="Logo" className="w-8 h-8" />
+             <img src="/android-chrome-192x192.png" alt="Logo" className="w-8 h-8" />
           </div>
         </div>
       </div>

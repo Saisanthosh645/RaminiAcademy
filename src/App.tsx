@@ -11,6 +11,8 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import DashboardLayout from "@/components/DashboardLayout";
 import Login from "@/pages/Login";
 import Signup from "@/pages/Signup";
+import { LoadingScreen } from "@/components/LoadingScreen";
+import { useAuth } from "@/lib/auth-context";
 import Dashboard from "@/pages/Dashboard";
 import Courses from "@/pages/Courses";
 import CourseDetail from "@/pages/CourseDetail";
@@ -20,8 +22,19 @@ import VerifyCertificate from "@/pages/VerifyCertificate";
 import NotFound from "@/pages/NotFound";
 import { coursesCollection } from "@/firebase/firestore";
 import { seedCourses } from "@/firebase/seedCourses";
+import TestCert from "@/pages/TestCert";
 
 const queryClient = new QueryClient();
+
+const RootRedirect = () => {
+  const { user, isLoading } = useAuth();
+  
+  if (isLoading) {
+    return <LoadingScreen message="Initialising..." fullScreen />;
+  }
+  
+  return <Navigate to={user ? "/dashboard" : "/login"} replace />;
+};
 
 const AppContent = () => {
   useEffect(() => {
@@ -52,7 +65,7 @@ const AppContent = () => {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/" element={<RootRedirect />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
@@ -64,6 +77,7 @@ const AppContent = () => {
           <Route path="/profile" element={<Profile />} />
         </Route>
         <Route path="/verify/:certificateId" element={<VerifyCertificate />} />
+        <Route path="/test-cert" element={<TestCert />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>

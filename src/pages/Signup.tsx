@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { GraduationCap, Mail, Lock, User, Loader2, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { LoadingScreen } from "@/components/LoadingScreen";
 
 const Signup = () => {
   const [name, setName] = useState("");
@@ -38,6 +39,10 @@ const Signup = () => {
       toast({ title: "Error", description: "Signup failed. This email may already be registered.", variant: "destructive" });
     }
   };
+
+  if (isLoading && !user) {
+    return <LoadingScreen message="Checking your session..." fullScreen />;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4" style={{ background: "var(--gradient-hero)" }}>

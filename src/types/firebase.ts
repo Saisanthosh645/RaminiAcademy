@@ -77,6 +77,8 @@ export interface Course {
   completedClasses: number;
   category: string;
   price: number;
+  originalPrice?: number;
+  isBestSeller?: boolean;
   syllabus?: SyllabusItem[];
   isPaid?: boolean;
 }

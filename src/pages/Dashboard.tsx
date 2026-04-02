@@ -3,8 +3,10 @@ import { LoadingScreen } from "@/components/LoadingScreen";
 import { useAuth } from "@/lib/auth-context";
 import { usePaidCourses } from "@/hooks/usePaidCourses";
 import CourseCard from "@/components/CourseCard";
-import { BookOpen, Trophy, Clock, type LucideIcon } from "lucide-react";
+import { BookOpen, Trophy, Clock, ArrowRight, Play, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { useNavigate } from "react-router-dom";
 
 const StatCard = ({ icon: Icon, label, value, color }: { icon: LucideIcon; label: string; value: string; color: string }) => (
   <motion.div
@@ -22,20 +24,90 @@ const StatCard = ({ icon: Icon, label, value, color }: { icon: LucideIcon; label
   </motion.div>
 );
 
+const ResumeHero = ({ course }: { course: any }) => {
+  const navigate = useNavigate();
+  if (!course) return null;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="relative overflow-hidden rounded-3xl group cursor-pointer"
+      onClick={() => navigate(`/courses/${course.id}`)}
+    >
+      {/* Background with blurred thumbnail */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-transparent z-10" />
+        <img 
+          src={course.thumbnail} 
+          alt="" 
+          className="w-full h-full object-cover scale-110 blur-xl opacity-20 group-hover:scale-100 transition-transform duration-700" 
+        />
+      </div>
+
+      <div className="relative z-10 p-8 lg:p-10 flex flex-col lg:flex-row lg:items-center justify-between gap-8 glass-card border-none bg-white/5 dark:bg-black/20">
+        <div className="space-y-4 max-w-xl">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-widest border border-primary/20">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+            </span>
+            Resume Learning
+          </div>
+          
+          <div>
+            <h2 className="text-3xl lg:text-4xl font-bold font-display text-foreground leading-tight group-hover:gradient-text transition-all duration-300">
+              {course.title}
+            </h2>
+            <p className="text-muted-foreground mt-2 text-lg line-clamp-1 opacity-80">
+              {course.instructor} • {course.level}
+            </p>
+          </div>
+
+          <div className="space-y-2 max-w-sm">
+            <div className="flex justify-between text-xs font-medium text-muted-foreground">
+              <span>Overall Progress</span>
+              <span>{course.progress}%</span>
+            </div>
+            <Progress value={course.progress} className="h-2" />
+          </div>
+        </div>
+
+        <Button size="lg" className="gradient-bg text-primary-foreground rounded-2xl h-16 px-8 gap-3 group/btn shadow-xl shadow-primary/20 hover:shadow-primary/40 transition-all duration-300">
+          <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+            <Play className="w-4 h-4 fill-current ml-0.5" />
+          </div>
+          <span className="text-lg font-bold">Jump Back In</span>
+          <ArrowRight className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
+        </Button>
+      </div>
+    </motion.div>
+  );
+};
+
 const Dashboard = () => {
   const { user } = useAuth();
   const { data: paidCourses = [], isLoading: coursesLoading } = usePaidCourses();
+  
   const avgProgress = Math.round(paidCourses.reduce((a, c) => a + c.progress, 0) / paidCourses.length) || 0;
   const liveCount = paidCourses.reduce((a, c) => a + c.schedule.filter((s) => s.status === "live").length, 0);
+  
+  const resumeCourse = [...paidCourses]
+    .filter(c => c.progress > 0 && c.progress < 100)
+    .sort((a, b) => b.progress - a.progress)[0] || paidCourses[0];
 
   return (
     <div className="p-6 lg:p-8 space-y-8 max-w-7xl mx-auto">
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-        <h1 className="text-3xl font-bold font-display text-foreground">
-          Welcome back, <span className="gradient-text">{user?.name?.split(" ")[0]}</span>
-        </h1>
-        <p className="text-muted-foreground mt-1">Continue where you left off</p>
-      </motion.div>
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
+          <h1 className="text-3xl lg:text-4xl font-bold font-display text-foreground">
+            Welcome back, <span className="gradient-text">{user?.name?.split(" ")[0]}</span>
+          </h1>
+          <p className="text-muted-foreground mt-1">Ready to master a new skill today?</p>
+        </motion.div>
+      </div>
+
+      {paidCourses.length > 0 && <ResumeHero course={resumeCourse} />}
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard icon={BookOpen} label="Paid Courses" value={String(paidCourses.length)} color="gradient-bg" />

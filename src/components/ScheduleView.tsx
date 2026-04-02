@@ -50,24 +50,24 @@ const ScheduleView = () => {
   const getStatusColor = (status: string): string => {
     switch (status) {
       case "completed":
-        return "bg-green-100 text-green-800 border-green-300";
+        return "bg-green-500/10 text-green-500 border-green-500/20";
       case "live":
-        return "bg-red-100 text-red-800 border-red-300";
+        return "bg-red-500/10 text-red-500 border-red-500/20";
       case "upcoming":
-        return "bg-blue-100 text-blue-800 border-blue-300";
+        return "bg-primary/10 text-primary border-primary/20";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-muted text-muted-foreground";
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "completed":
-        return <CheckCircle2 className="w-4 h-4" />;
+        return <CheckCircle2 className="w-3.5 h-3.5" />;
       case "live":
-        return <Zap className="w-4 h-4" />;
+        return <Zap className="w-3.5 h-3.5 animate-pulse" />;
       case "upcoming":
-        return <AlertCircle className="w-4 h-4" />;
+        return <AlertCircle className="w-3.5 h-3.5" />;
       default:
         return null;
     }
@@ -76,11 +76,11 @@ const ScheduleView = () => {
   const getStatusLabel = (status: string): string => {
     switch (status) {
       case "completed":
-        return "✅ Completed";
+        return "Completed";
       case "live":
-        return "🔴 Live Today";
+        return "Live Now";
       case "upcoming":
-        return "🔵 Upcoming";
+        return "Upcoming";
       default:
         return status;
     }
@@ -91,7 +91,6 @@ const ScheduleView = () => {
       weekday: "long",
       month: "short",
       day: "numeric",
-      year: "numeric",
     });
   };
 
@@ -104,74 +103,80 @@ const ScheduleView = () => {
 
   const SessionCard = ({ session }: { session: ScheduleSession }) => (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
+      initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -4 }}
       transition={{ duration: 0.3 }}
-      className="relative"
+      className="relative h-full"
     >
-      <Card className={`overflow-hidden border-l-4 ${
-        session.status === "live" ? "border-l-red-500 bg-red-50" : 
-        session.status === "completed" ? "border-l-green-500 bg-green-50" : 
-        "border-l-blue-500 bg-blue-50"
+      <Card className={`h-full glass-card border-l-4 transition-all duration-300 ${
+        session.status === "live" ? "border-l-red-500 shadow-lg shadow-red-500/10" : 
+        session.status === "completed" ? "border-l-green-500" : 
+        "border-l-primary"
       }`}>
-        <div className="p-4 md:p-5 space-y-3">
+        <div className="p-5 flex flex-col h-full justify-between gap-4">
           {/* Header */}
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex-1">
-              <h3 className="font-semibold text-foreground text-lg">{session.courseName}</h3>
-              <p className="text-xs text-muted-foreground mt-1">{session.day}</p>
+          <div className="space-y-2">
+            <div className="flex items-start justify-between gap-3">
+              <h3 className="font-bold text-foreground text-lg leading-tight line-clamp-2">{session.courseName}</h3>
+              <Badge variant="outline" className={`${getStatusColor(session.status)} flex items-center gap-1.5 py-1 px-2.5 rounded-full text-[10px] uppercase font-bold tracking-wider border transition-colors`}>
+                {getStatusIcon(session.status)}
+                {getStatusLabel(session.status)}
+              </Badge>
             </div>
-            <Badge className={`${getStatusColor(session.status)} flex items-center gap-1 whitespace-nowrap`}>
-              {getStatusIcon(session.status)}
-              {getStatusLabel(session.status)}
-            </Badge>
+            <p className="text-sm font-medium text-primary/80">{session.day}</p>
           </div>
 
-          {/* Details Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
-            <div className="flex items-center gap-2 text-sm">
-              <Calendar className="w-4 h-4 text-muted-foreground" />
-              <span className="text-foreground">{formatDate(session.date)}</span>
+          {/* Details */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-3 text-sm text-muted-foreground/90">
+              <div className="w-8 h-8 rounded-full bg-muted/50 flex items-center justify-center">
+                <Calendar className="w-4 h-4 text-primary" />
+              </div>
+              <span className="font-medium text-foreground/90">{formatDate(session.date)}</span>
             </div>
-            <div className="flex items-center gap-2 text-sm">
-              <Clock className="w-4 h-4 text-muted-foreground" />
-              <span className="text-foreground">
+            <div className="flex items-center gap-3 text-sm text-muted-foreground/90">
+              <div className="w-8 h-8 rounded-full bg-muted/50 flex items-center justify-center">
+                <Clock className="w-4 h-4 text-primary" />
+              </div>
+              <span className="font-medium text-foreground/90">
                 {formatTime(session.startTime)} - {formatTime(session.endTime)}
               </span>
-            </div>
-            <div className="col-span-2 md:col-span-1 flex items-center gap-2 text-sm">
-              <Video className="w-4 h-4 text-muted-foreground" />
-              <span className="text-blue-600 font-medium">Zoom Link</span>
             </div>
           </div>
 
           {/* Action Button */}
-          <div className="flex gap-2 pt-2">
+          <div className="flex gap-2 pt-2 mt-auto">
             {session.status === "live" ? (
               <Button
-                className="flex-1 bg-red-500 hover:bg-red-600 text-white"
+                className="flex-1 gradient-bg text-primary-foreground font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] transition-transform"
                 onClick={() => window.open(session.zoomLink, "_blank")}
               >
                 <Video className="w-4 h-4 mr-2" />
-                Join Now
+                Join Live Class
               </Button>
             ) : session.status === "upcoming" ? (
-              <Button variant="secondary" className="flex-1" disabled>
-                Starts Soon
+              <Button variant="secondary" className="flex-1 font-medium bg-secondary/50 backdrop-blur-sm" disabled>
+                <Clock className="w-4 h-4 mr-2 opacity-50" />
+                Wait for Session
               </Button>
             ) : (
-              <Button variant="secondary" className="flex-1" disabled>
+              <Button variant="ghost" className="flex-1 font-medium bg-green-500/5 text-green-500/70 border border-green-500/10" disabled>
                 <CheckCircle2 className="w-4 h-4 mr-2" />
-                Completed
+                Recorded Available
               </Button>
             )}
             <Button
               variant="outline"
-              size="sm"
-              onClick={() => navigator.clipboard.writeText(session.zoomLink)}
+              size="icon"
+              className="rounded-xl border-border/40 hover:bg-muted/50 transition-colors"
+              onClick={() => {
+                navigator.clipboard.writeText(session.zoomLink);
+                // toast is handled by parent or we could add here
+              }}
               title="Copy Zoom Link"
             >
-              📋
+              <Video className="w-4 h-4 opacity-70" />
             </Button>
           </div>
         </div>
@@ -181,23 +186,36 @@ const ScheduleView = () => {
 
   const TodayHighlight = () => {
     if (todaySessions.length === 0) {
-      return null;
+      return (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-12">
+          <div className="glass-card rounded-2xl p-8 text-center border-dashed border-2">
+            <Calendar className="w-12 h-12 text-muted-foreground/30 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-foreground">No classes today</h3>
+            <p className="text-muted-foreground mt-2">Enjoy your day or catch up on old recordings!</p>
+          </div>
+        </motion.div>
+      );
     }
 
     return (
-      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
-        <div className="mb-8">
-          <div className="flex items-center gap-2 mb-4">
-            <AlertCircle className="w-5 h-5 text-yellow-600" />
-            <h2 className="text-2xl font-bold text-foreground">Today's Classes</h2>
+      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-12">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center shadow-lg shadow-primary/20">
+              <Zap className="w-5 h-5 text-primary-foreground animate-pulse" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-foreground">Today's Schedule</h2>
+              <p className="text-sm text-muted-foreground">Don't miss these upcoming sessions</p>
+            </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <AnimatePresence>
-              {todaySessions.map((session) => (
-                <SessionCard key={session.id} session={session} />
-              ))}
-            </AnimatePresence>
-          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <AnimatePresence mode="popLayout">
+            {todaySessions.map((session) => (
+              <SessionCard key={session.id} session={session} />
+            ))}
+          </AnimatePresence>
         </div>
       </motion.div>
     );
@@ -217,25 +235,29 @@ const ScheduleView = () => {
     });
 
     return (
-      <div className="space-y-8">
+      <div className="space-y-12">
         {Object.entries(sessionsByDate).map(([dateKey, dateSessions]) => (
-          <motion.div key={dateKey} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            <div className="mb-6">
-              <div className="flex items-center gap-2 mb-4">
-                <Calendar className="w-5 h-5 text-primary" />
-                <h3 className="text-xl font-bold text-foreground">{dateKey}</h3>
+          <motion.div key={dateKey} initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}>
+            <div className="relative pl-6 md:pl-8 border-l-2 border-border/40 pb-4">
+              {/* Timeline Marker */}
+              <div className="absolute -left-[9px] top-1.5 w-4 h-4 rounded-full bg-background border-2 border-primary z-10 shadow-sm" />
+              
+              <div className="mb-6">
+                <h3 className="text-xl font-bold text-foreground flex items-center gap-2">
+                  {dateKey}
+                  {dateKey === formatDate(new Date()) && (
+                    <Badge className="bg-primary/20 text-primary border-none text-[10px] uppercase tracking-tighter px-2">Today</Badge>
+                  )}
+                </h3>
               </div>
               
-              {/* Separate by day of week */}
-              {dateSessions.length > 0 && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <AnimatePresence>
-                    {dateSessions.map((session) => (
-                      <SessionCard key={session.id} session={session} />
-                    ))}
-                  </AnimatePresence>
-                </div>
-              )}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <AnimatePresence>
+                  {dateSessions.map((session) => (
+                    <SessionCard key={session.id} session={session} />
+                  ))}
+                </AnimatePresence>
+              </div>
             </div>
           </motion.div>
         ))}
@@ -244,48 +266,95 @@ const ScheduleView = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4 md:p-8">
-      <div className="max-w-7xl mx-auto space-y-8">
-        {/* Header */}
-        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold font-display text-foreground">Class Schedule</h1>
-            <p className="text-muted-foreground mt-2">Your weekly learning journey</p>
-            <p className="text-xs text-muted-foreground mt-1">Current time: {currentTime.toLocaleString()}</p>
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Decorative backgrounds */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/4 pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-accent/5 rounded-full blur-[120px] translate-y-1/2 -translate-x-1/4 pointer-events-none" />
+
+      <div className="max-w-7xl mx-auto p-4 md:p-8 relative z-10">
+        {/* Header Section */}
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }} 
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-12"
+        >
+          <Badge variant="outline" className="mb-4 py-1 px-4 rounded-full border-primary/20 text-primary font-bold tracking-wide uppercase text-xs bg-primary/5">
+            Learning Roadmap
+          </Badge>
+          <h1 className="text-4xl md:text-5xl font-bold font-display text-foreground mb-4">
+            Class <span className="gradient-text">Schedule</span>
+          </h1>
+          <div className="flex items-center justify-center gap-2 text-muted-foreground text-sm font-medium">
+            <Clock className="w-4 h-4" />
+            <span>Updates every session • Indian Standard Time (IST)</span>
           </div>
         </motion.div>
 
-        {/* Today's Highlight */}
-        <TodayHighlight />
-
-        {/* Schedule Grid */}
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
-          <div>
-            <h2 className="text-2xl font-bold text-foreground mb-6">Upcoming Classes</h2>
-            <ScheduleGrid />
+        {!userCourses || userCourses.length === 0 ? (
+          <div className="glass-card rounded-2xl p-12 text-center max-w-2xl mx-auto">
+            <AlertCircle className="w-12 h-12 text-primary/40 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-foreground">No Courses Enrolled</h2>
+            <p className="text-muted-foreground mt-3 mb-8">
+              Enrol in courses to see your personalized class schedule and join live sessions.
+            </p>
+            <Button asChild className="gradient-bg px-8">
+              <a href="/courses">View All Courses</a>
+            </Button>
           </div>
-        </motion.div>
+        ) : (
+          <div className="space-y-16">
+            {/* Today's Highlight */}
+            <TodayHighlight />
 
-        {/* Legend */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 20 }} transition={{ delay: 0.4 }}>
-          <Card className="p-6 bg-white border border-slate-200">
-            <h3 className="font-semibold text-foreground mb-4">Status Legend</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                <span className="text-sm text-foreground">✅ Completed - Past sessions</span>
+            {/* Upcoming Grid */}
+            <section>
+              <div className="flex items-center gap-3 mb-8">
+                <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
+                  <Calendar className="w-5 h-5 text-foreground/70" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-foreground">Upcoming Classes</h2>
+                  <p className="text-sm text-muted-foreground">Stay ahead of your learning milestones</p>
+                </div>
               </div>
-              <div className="flex items-center gap-3">
-                <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                <span className="text-sm text-foreground">🔴 Live Today - Currently happening</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                <span className="text-sm text-foreground">🔵 Upcoming - Future sessions</span>
-              </div>
-            </div>
-          </Card>
-        </motion.div>
+              <ScheduleGrid />
+            </section>
+
+            {/* Legend / Info */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }} 
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="pt-8"
+            >
+              <Card className="glass-card p-8 border-dashed bg-primary/5">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                  <div>
+                    <h3 className="text-xl font-bold text-foreground mb-2">Class Policy & Help</h3>
+                    <p className="text-muted-foreground text-sm leading-relaxed">
+                      All live classes are recorded and available in the course dashboard within 24 hours. 
+                      Need help joining? Contact our support team on WhatsApp for immediate assistance.
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                    <div className="flex items-center gap-2 bg-background/50 p-3 rounded-xl border border-border/20">
+                      <div className="w-2.5 h-2.5 rounded-full bg-red-500 shadow-sm shadow-red-500/20" />
+                      <span className="text-xs font-bold text-foreground/80">LIVE NOW</span>
+                    </div>
+                    <div className="flex items-center gap-2 bg-background/50 p-3 rounded-xl border border-border/20">
+                      <div className="w-2.5 h-2.5 rounded-full bg-primary shadow-sm shadow-primary/20" />
+                      <span className="text-xs font-bold text-foreground/80">UPCOMING</span>
+                    </div>
+                    <div className="flex items-center gap-2 bg-background/50 p-3 rounded-xl border border-border/20">
+                      <div className="w-2.5 h-2.5 rounded-full bg-green-500 shadow-sm shadow-green-500/20" />
+                      <span className="text-xs font-bold text-foreground/80">FINISHED</span>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            </motion.div>
+          </div>
+        )}
       </div>
     </div>
   );

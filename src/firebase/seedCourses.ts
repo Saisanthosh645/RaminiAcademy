@@ -18,6 +18,8 @@ const courses: Course[] = [
     totalClasses: 10,
     completedClasses: 0,
     price: 99,
+    originalPrice: 499,
+    isBestSeller: true,
     syllabus: [
       { week: 1, topic: "Setup & Syntax Basics", description: "Installation, variables, basic operations" },
       { week: 2, topic: "Data Types & Structures", description: "Lists, tuples, dictionaries, sets" },
@@ -41,8 +43,10 @@ const courses: Course[] = [
       { id: "py-10", topic: "Final Project", date: "2026-06-18", time: "7:00 PM", status: "upcoming", meetLink: "https://zoom.us/j/1234567890" }
     ],
     notes: [
-      { id: "py-note-1", title: "Python Cheatsheet", description: "Quick reference for syntax and built-ins", fileUrl: "https://example.com/notes/python-cheatsheet.pdf", type: "pdf" },
-      { id: "py-note-2", title: "Project Checklist", description: "Milestones for your capstone project", fileUrl: "https://example.com/notes/python-project-checklist.pdf", type: "pdf" }
+      { id: "py-note-1", title: "Python Syntax & Basic Data Types", description: "Comprehensive guide to strings, integers, floats, and boolean logic in Python.", fileUrl: "https://docs.python.org/3/tutorial/introduction.html", type: "pdf" },
+      { id: "py-note-2", title: "Mastering Lists & Dictionaries", description: "Efficient use of Python collections for high-performance data handling.", fileUrl: "https://docs.python.org/3/tutorial/datastructures.html", type: "pdf" },
+      { id: "py-note-3", title: "Object Oriented Programming (OOP)", description: "Best practices for building modular and reusable Python classes.", fileUrl: "https://realpython.com/python3-object-oriented-programming/", type: "pdf" },
+      { id: "py-note-4", title: "Python Standard Library Cheatsheet", description: "A quick reference for common modules like os, sys, datetime, and math.", fileUrl: "https://docs.python.org/3/library/index.html", type: "pdf" }
     ],
     announcements: [
       { id: "py-ann-1", title: "Welcome to Python 0 to Hero", message: "Session 1 recording is available now.", date: "2026-04-01", priority: "normal" }
@@ -70,7 +74,8 @@ const courses: Course[] = [
     category: "Web Development",
     totalClasses: 8,
     completedClasses: 0,
-    price: 199,
+    price: 99,
+    originalPrice: 799,
     syllabus: [
       { week: 1, topic: "HTML Essentials", description: "Semantic HTML5, forms, accessibility" },
       { week: 2, topic: "CSS Fundamentals", description: "Selectors, box model, positioning" },
@@ -92,7 +97,9 @@ const courses: Course[] = [
       { id: "web-8", topic: "Capstone Website", date: "2026-06-04", time: "8:15 PM", status: "upcoming", meetLink: "https://zoom.us/j/2345678901" }
     ],
     notes: [
-      { id: "web-note-1", title: "HTML Template", description: "Starter boilerplate", fileUrl: "https://example.com/notes/html-template.pdf", type: "pdf" }
+      { id: "web-note-1", title: "Semantic HTML5 Guide", description: "Why using the right tags matters for SEO and accessibility.", fileUrl: "https://developer.mozilla.org/en-US/docs/Glossary/Semantics#semantics_in_html", type: "pdf" },
+      { id: "web-note-2", title: "CSS Flexbox & Grid Mastery", description: "Modern layout techniques for responsive design.", fileUrl: "https://css-tricks.com/snippets/css/a-guide-to-flexbox/", type: "pdf" },
+      { id: "web-note-3", title: "Modern JavaScript (ES6+)", description: "Arrows functions, spread operators, and destructing.", fileUrl: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide", type: "pdf" }
     ],
     announcements: [],
     finalQuiz: { id: "web-quiz-1", title: "Web Development - Final Exam", topic: "HTML/CSS/JavaScript", isFinalExam: true, questions: [
@@ -119,6 +126,7 @@ const courses: Course[] = [
     totalClasses: 9,
     completedClasses: 0,
     price: 99,
+    originalPrice: 499,
     syllabus: [
       { week: 1, topic: "Arrays & Lists", description: "Operations, complexity, searching" },
       { week: 2, topic: "Stacks & Queues", description: "Implementation, use cases" },
@@ -141,7 +149,9 @@ const courses: Course[] = [
       { id: "dsa-9", topic: "Interview Problems", date: "2026-06-12", time: "5:00 PM", status: "upcoming", meetLink: "https://zoom.us/j/3456789012" }
     ],
     notes: [
-      { id: "dsa-note-1", title: "Algorithm Cheat Sheet", description: "Complexity and patterns", fileUrl: "https://example.com/notes/dsa-cheatsheet.pdf", type: "pdf" }
+      { id: "dsa-note-1", title: "Big O Complexity Chart", description: "Visualizing time and space complexity for all core DSA patterns.", fileUrl: "https://www.bigocheatsheet.com/", type: "pdf" },
+      { id: "dsa-note-2", title: "Arrays & Linked Lists in Python", description: "When to use each and implementation details.", fileUrl: "https://realpython.com/linked-lists-python/", type: "pdf" },
+      { id: "dsa-note-3", title: "Recursive Thinking Guide", description: "How to break down complex problems into recursive base cases.", fileUrl: "https://realpython.com/python-recursion/", type: "pdf" }
     ],
     announcements: [],
     finalQuiz: { id: "dsa-quiz-1", title: "Data Structures & Algorithms - Final Exam", topic: "DSA Fundamentals", isFinalExam: true, questions: [
@@ -167,7 +177,8 @@ const courses: Course[] = [
     category: "AI",
     totalClasses: 6,
     completedClasses: 0,
-    price: 199,
+    price: 99,
+    originalPrice: 699,
     syllabus: [
       { week: 1, topic: "AI Fundamentals & ChatGPT", description: "What is AI, prompt basics" },
       { week: 2, topic: "Advanced Prompt Engineering", description: "Techniques for better outputs" },
@@ -185,7 +196,9 @@ const courses: Course[] = [
       { id: "ai-6", topic: "AI Ethics", date: "2026-05-21", time: "9:15 PM", status: "upcoming", meetLink: "https://zoom.us/j/4567890123" }
     ],
     notes: [
-      { id: "ai-note-1", title: "AI Tool List", description: "Handy tools and links", fileUrl: "https://example.com/notes/ai-tools-list.pdf", type: "pdf" }
+      { id: "ai-note-1", title: "Prompt Engineering Best Practices", description: "Frameworks for getting perfect results from LLMs every time.", fileUrl: "https://platform.openai.com/docs/guides/prompt-engineering", type: "pdf" },
+      { id: "ai-note-2", title: "GitHub Copilot Tips", description: "How to pair program with AI efficiently.", fileUrl: "https://docs.github.com/en/copilot/using-github-copilot/getting-started-with-github-copilot", type: "pdf" },
+      { id: "ai-note-3", title: "AI Image Generation Guide", description: "Understanding Midjourney and DALL-E parameters.", fileUrl: "https://docs.midjourney.com/docs/prompts", type: "pdf" }
     ],
     announcements: [],
     finalQuiz: { id: "ai-quiz-1", title: "AI Tools Mastery - Final Exam", topic: "AI Tools & Workflows", isFinalExam: true, questions: [
@@ -203,6 +216,7 @@ const courses: Course[] = [
     id: "powerpoint",
     title: "MS PowerPoint",
     price: 99,
+    originalPrice: 299,
     syllabus: [
       { week: 1, topic: "PowerPoint Basics", description: "Interface, slide creation, text formatting" },
       { week: 2, topic: "Design & Themes", description: "Layouts, color schemes, master slides" },
@@ -227,7 +241,8 @@ const courses: Course[] = [
       { id: "ppt-5", topic: "Final Presentation", date: "2026-05-15", time: "7:15 PM", status: "upcoming", meetLink: "https://zoom.us/j/5678901234" }
     ],
     notes: [
-      { id: "ppt-note-1", title: "Slide Checklist", description: "What every slide needs", fileUrl: "https://example.com/notes/ppt-checklist.pdf", type: "pdf" }
+      { id: "ppt-note-1", title: "Slide Design Best Practices", description: "Rules for typography, white space, and visual hierarchy.", fileUrl: "https://www.microsoft.com/en-us/microsoft-365/blog/2013/11/21/quick-tips-for-creating-powerful-presentations/", type: "pdf" },
+      { id: "ppt-note-2", title: "Animations & Transitions Guide", description: "How to use motion to enhance, not distract.", fileUrl: "https://support.microsoft.com/en-us/office/add-animations-to-slides-in-powerpoint-70678d7d-e2d9-43c9-952c-bd93a7e4465b", type: "pdf" }
     ],
     announcements: [],
     finalQuiz: { id: "ppt-quiz-1", title: "MS PowerPoint - Final Exam", topic: "Presentation Skills", isFinalExam: true, questions: [
@@ -241,11 +256,12 @@ const courses: Course[] = [
       { id: "q8", question: "Animations should be?", options: ["Excessive", "Purposeful and minimal", "Distracting", "Random"], correctAnswer: 1 }
     ] }
   },
-{
+  {
     id: "excel",
     title: "MS Excel",
     description: "Get skilled in spreadsheets, formulas, charts, and data analytics using MS Excel.",
     price: 99,
+    originalPrice: 299,
     syllabus: [
       { week: 1, topic: "Excel Fundamentals", description: "Navigation, data entry, formatting" },
       { week: 2, topic: "Formulas & Functions", description: "Basic to advanced calculations" },
@@ -271,10 +287,13 @@ const courses: Course[] = [
       { id: "xls-6", topic: "Excel Automation", date: "2026-05-22", time: "6:15 PM", status: "upcoming", meetLink: "https://zoom.us/j/6789012345" }
     ],
     notes: [
-      { id: "xls-note-1", title: "Excel Formula List", description: "Essential formulas for daily tasks", fileUrl: "https://example.com/notes/excel-formulas.pdf", type: "pdf" }
+      { id: "xls-note-1", title: "Excel Essential Formulas", description: "Lookup, Logical, and Math functions you'll use every day.", fileUrl: "https://support.microsoft.com/en-us/office/excel-functions-by-category-5f91f4e9-7b42-46d2-9bd1-63f26a86c0eb", type: "pdf" },
+      { id: "xls-note-2", title: "Data Visualization Guide", description: "Choosing the right chart type for your data storytelling.", fileUrl: "https://support.microsoft.com/en-us/office/available-chart-types-in-office-a6197214-c871-40a3-962e-9d7a220ce660", type: "pdf" },
+      { id: "xls-note-3", title: "Mastering Pivot Tables", description: "How to summarize large datasets in seconds.", fileUrl: "https://support.microsoft.com/en-us/office/create-a-pivottable-to-analyze-worksheet-data-a9a84538-b139-40d1-b8e9-28c0a5201888", type: "pdf" }
     ],
     announcements: [],
     finalQuiz: { id: "xls-quiz-1", title: "MS Excel - Final Exam", topic: "Spreadsheet Mastery", isFinalExam: true, questions: [
+
       { id: "q1", question: "Which function finds average?", options: ["SUM", "AVG", "AVERAGE", "MEDIAN"], correctAnswer: 2 },
       { id: "q2", question: "What does VLOOKUP do?", options: ["Vertical lookup", "Volume calculation", "Video link", "Validation"], correctAnswer: 0 },
       { id: "q3", question: "How do you freeze rows?", options: ["Format menu", "View menu", "Edit menu", "Insert menu"], correctAnswer: 1 },

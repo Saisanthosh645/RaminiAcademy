@@ -24,3 +24,5 @@ dist-ssr
 *.sw?
 scripts/serviceAccountKey.json
 *.json~
+
+scripts/serviceAccountKey.json

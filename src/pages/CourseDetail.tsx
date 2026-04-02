@@ -12,23 +12,22 @@ import { useState, useEffect } from "react";
 import type { Quiz, Course, ScheduleItem, CourseProgress } from "@/types/firebase";
 import { useAuth } from "@/lib/auth-context";
 import { getLessonQuestions } from "@/lib/lessonQuizzes";
-import html2canvas from "html2canvas";
-import { jsPDF } from "jspdf";
 import { useQueryClient } from "@tanstack/react-query";
 import { coursesRef, usersRef } from "@/firebase/firestore";
 import { updateDoc } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
-import { QRCodeCanvas } from "qrcode.react";
 import { collection, query, where, getDocs, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/firebase/firestore";
 import { COLLECTIONS } from "@/firebase/collections";
+import { Certificate } from "@/components/Certificate";
+import { useCertificateDownload } from "@/hooks/useCertificateDownload";
 
 const CertificateModal = ({ course, userProgress, userName, userId, onClose }: { course: Course; userProgress: CourseProgress; userName: string; userId: string; onClose: () => void }) => {
   const [certId, setCertId] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isDownloading, setIsDownloading] = useState(false);
+  const { downloadPDF, downloadImage, isDownloading } = useCertificateDownload();
+  const { toast } = useToast();
   
-  // Logic to fetch or create certificate ID
   useEffect(() => {
     const getOrCreateCert = async () => {
       setIsGenerating(true);
@@ -40,8 +39,6 @@ const CertificateModal = ({ course, userProgress, userName, userId, onClose }: {
         if (!snapshot.empty) {
           setCertId(snapshot.docs[0].data().id);
         } else {
-          // In a real app, this should be done via Firebase Functions for security.
-          // For this example, we generate it here, but Security Rules will restrict this collection.
           const randomHex = Math.random().toString(36).substring(2, 8).toUpperCase();
           const courseCode = course.id.substring(0, 4).toUpperCase();
           const newId = `RAMINI-${courseCode}-${randomHex}`;
@@ -64,6 +61,11 @@ const CertificateModal = ({ course, userProgress, userName, userId, onClose }: {
         }
       } catch (error) {
         console.error("Error managing certificate record:", error);
+        toast({
+          title: "Certificate Error",
+          description: "Failed to generate certificate ID. Please contact support.",
+          variant: "destructive",
+        });
       } finally {
         setIsGenerating(false);
       }
@@ -73,172 +75,83 @@ const CertificateModal = ({ course, userProgress, userName, userId, onClose }: {
   }, [course.id, userId, userName, userProgress.quizScore]);
 
   const verificationUrl = certId ? `${window.location.origin}/verify/${certId}` : "";
+  const grade = userProgress.quizScore >= 85 ? "Distinction" : "Pass";
+  const dateStr = userProgress.certificateDate 
+    ? new Date(userProgress.certificateDate).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
+    : new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
 
-  const handleDownloadPDF = async () => {
-    const element = document.getElementById("certificate-container");
-    if (!element) return;
-    
-    setIsDownloading(true);
-    // Wait a tick for React to flush the state to the DOM (removes gradients)
-    await new Promise(resolve => setTimeout(resolve, 50));
-    try {
-      // Create high-res canvas
-      const canvas = await html2canvas(element, {
-        scale: 3,
-        useCORS: true,
-        backgroundColor: null, // Transparent to keep theme
-      });
-      
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF("landscape", "mm", "a4");
-      
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
-      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
-      
-      const imgX = (pdfWidth - imgWidth * ratio) / 2;
-      const imgY = (pdfHeight - imgHeight * ratio) / 2;
-      
-      // Fill black background for the PDF to match dark mode theme natively
-      pdf.setFillColor(10, 15, 25); // #0a0f19 roughly
-      pdf.rect(0, 0, pdfWidth, pdfHeight, "F");
-      
-      pdf.addImage(imgData, "PNG", imgX, imgY, imgWidth * ratio, imgHeight * ratio);
-      pdf.save(`${course.title.replace(/\s+/g, "_")}_Certificate.pdf`);
-    } catch (error) {
-      console.error("Failed to generate PDF", error);
-    } finally {
-      setIsDownloading(false);
-    }
+  const handleDownload = async () => {
+    await downloadPDF("certificate-capture", userName);
   };
 
+  const handleDownloadImage = async () => {
+    await downloadImage("certificate-capture", userName);
+  };
+
+  if (isGenerating) return null;
+
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4 sm:p-6 backdrop-blur-sm overflow-y-auto">
-      <motion.div 
-        initial={{ scale: 0.9, y: 20 }} 
-        animate={{ scale: 1, y: 0 }} 
-        className="relative bg-background text-foreground rounded-xl w-full max-w-2xl shadow-2xl overflow-hidden"
-        id="certificate-container"
-      >
-        {/* Fancy Inner Border */}
-        <div className="p-4 sm:p-8 border-[6px] border-double border-primary/20 m-2 sm:m-4 rounded-lg relative overflow-hidden bg-white/5 dark:bg-black/5">
-          {/* Decorative Corner Elements */}
-          <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-primary/40 rounded-tl max-sm:hidden"></div>
-          <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-primary/40 rounded-tr max-sm:hidden"></div>
-          <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-primary/40 rounded-bl max-sm:hidden"></div>
-          <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-primary/40 rounded-br max-sm:hidden"></div>
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 bg-black/95 flex flex-col items-center justify-start z-[100] p-4 sm:p-10 backdrop-blur-3xl overflow-y-auto">
+      {/* Hidden high-res capture div moved outside for zero interference */}
+      <div className="absolute top-6 right-6 z-[110]" data-html2canvas-ignore>
+        <Button variant="outline" size="icon" className="rounded-full bg-white/10 text-white border-white/20 hover:bg-white/20 hover:scale-110 transition-transform" onClick={onClose}>
+          <X className="w-5 h-5" />
+        </Button>
+      </div>
+
+      {/* Visible Preview Section */}
+      <div className="w-full flex-1 flex flex-col items-center justify-center pt-10">
+        <div className="relative group">
+          <Certificate 
+            userName={userName}
+            courseTitle={course.title}
+            score={userProgress.quizScore}
+            grade={grade}
+            date={dateStr}
+            certId={certId || ""}
+            verificationUrl={verificationUrl}
+            style={{
+              transform: `scale(${Math.min(0.8, (window.innerWidth * 0.9) / 1123, (window.innerHeight * 0.65) / 794)})`,
+              transformOrigin: "center center",
+            }}
+            className="shadow-[0_0_120px_rgba(0,0,0,0.6)] rounded-sm pointer-events-none sm:pointer-events-auto"
+          />
+        </div>
+        
+        {/* Action Bar */}
+        <div className="mt-12 flex flex-col items-center gap-4" data-html2canvas-ignore>
+          <div className="flex items-center gap-6 p-4 bg-white/5 backdrop-blur-3xl border border-white/10 rounded-full shadow-3xl">
+            <Button variant="ghost" className="rounded-full text-white hover:bg-white/10 px-10 h-14" onClick={onClose} disabled={isDownloading}>
+              Close
+            </Button>
+            <Button 
+              className="rounded-full gradient-bg text-primary-foreground font-bold px-12 h-14 text-lg shadow-2xl shadow-primary/40 transform hover:scale-105 active:scale-95 transition-all lg:min-w-[320px]" 
+              onClick={handleDownload} 
+              disabled={isDownloading || !certId}
+            >
+              {isDownloading ? (
+                <>
+                  <div className="w-5 h-5 mr-3 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                  Generating High-Res PDF...
+                </>
+              ) : (
+                <>
+                  <Download className="w-6 h-6 mr-3" />
+                  Download Certificate
+                </>
+              )}
+            </Button>
+          </div>
           
-          {/* Watermark Logo */}
-          <div className="absolute inset-0 flex items-center justify-center opacity-[0.05] pointer-events-none">
-            <img src="/favicon.ico" alt="" className="w-96 h-96 object-contain grayscale" />
-          </div>
-
-          <div className="relative z-10 text-center space-y-4 py-1">
-            <div className="flex justify-center mb-3">
-              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white shadow-lg shadow-primary/20 ring-4 ring-background overflow-hidden p-3">
-                <img src="/favicon.ico" alt="Ramini Academy" className="w-full h-full object-contain" />
-              </div>
-            </div>
-            
-            <div className="space-y-1">
-              <h2 className={`text-2xl sm:text-3xl font-black tracking-tight uppercase font-display ${isDownloading ? 'text-primary' : 'text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary'}`} style={{ letterSpacing: '0.1em' }}>
-                Certificate
-              </h2>
-              <p className="text-base tracking-[0.2em] text-muted-foreground uppercase font-semibold">Of Completion</p>
-            </div>
-            
-            <div className="pt-3">
-              <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-widest mb-2">This is to proudly certify that</p>
-              <h3 className="text-2xl sm:text-3xl font-bold text-foreground font-serif italic pb-1 border-b-2 border-primary/20 inline-block px-6">
-                {userName || "Student Name"}
-              </h3>
-            </div>
-            
-            <div className="space-y-2 pt-2 max-w-lg mx-auto">
-              <p className="text-[10px] sm:text-xs text-muted-foreground leading-relaxed">
-                has successfully completed the comprehensive curriculum and demonstrated absolute proficiency in the course:
-              </p>
-              <h4 className={`text-lg sm:text-xl font-bold ${isDownloading ? 'text-foreground' : 'bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent'}`}>
-                {course.title || "Course Name"}
-              </h4>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4 pt-6 pb-2 sm:px-6 border-t border-border/50 mt-6 mb-2">
-              <div className="flex flex-col items-center justify-end">
-                <p className="text-sm font-bold text-foreground font-serif mb-1">{course.instructor || "Instructor"}</p>
-                <div className="h-px w-20 bg-primary/30 mb-1"></div>
-                <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Course Instructor</p>
-              </div>
-              
-              <div className="flex flex-col items-center justify-end">
-                <div className="w-10 h-10 rounded-full border border-primary/20 flex items-center justify-center mb-1 shadow-inner bg-background">
-                  <div className="w-6 h-6 rounded-full border border-dashed border-primary/40 flex items-center justify-center">
-                    <CheckCircle2 className="w-3 h-3 text-primary/60" />
-                  </div>
-                </div>
-                <p className="text-sm font-bold text-foreground font-serif mb-1">
-                  {userProgress.certificateDate ? new Date(userProgress.certificateDate).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
-                </p>
-                <div className="h-px w-20 bg-primary/30 mb-1"></div>
-                <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Date of Issue</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Verification Info & QR */}
-        <div className="absolute bottom-4 left-6 flex items-center gap-4 z-20">
-          {verificationUrl && (
-            <div className="p-1 bg-white rounded-lg shadow-sm">
-              <QRCodeCanvas 
-                value={verificationUrl} 
-                size={60} 
-                level="H"
-                includeMargin={false}
-              />
-            </div>
-          )}
-          <div className="flex flex-col">
-            <p className="text-[8px] text-muted-foreground uppercase tracking-widest leading-none mb-1">Verify Authenticity</p>
-            <p className="text-[9px] font-mono text-primary/80 truncate max-w-[200px]">
-              {verificationUrl.replace(/^https?:\/\//, '')}
-            </p>
-          </div>
-        </div>
-
-        {/* Certificate ID */}
-        <div className="absolute bottom-2 right-4 sm:bottom-4 sm:right-6 text-[10px] text-muted-foreground/60 font-mono tracking-widest z-20">
-          ID: {certId || "GENERATING..."}
-        </div>
-
-        {/* Action Buttons - Hidden during canvas capture mostly via z-index or out of bounds, but we can explicitly hide */}
-        <div className="absolute top-4 right-4 flex gap-2 z-20" data-html2canvas-ignore>
-          <Button variant="outline" size="icon" className="rounded-full bg-background/50 backdrop-blur-md border-border/50 hover:bg-background" onClick={onClose}>
-            <X className="w-4 h-4" />
+          <Button 
+            variant="link" 
+            className="text-white/40 hover:text-white transition-colors text-sm" 
+            onClick={handleDownloadImage}
+            disabled={isDownloading || !certId}
+          >
+            Download as Image (Fallback)
           </Button>
         </div>
-      </motion.div>
-      
-      {/* Floating Action Bar */}
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3 p-2 bg-background/80 backdrop-blur-xl border rounded-full shadow-2xl z-[110]" data-html2canvas-ignore>
-        <Button variant="ghost" className="rounded-full" onClick={onClose} disabled={isDownloading}>
-          Cancel
-        </Button>
-        <Button className="rounded-full gradient-bg text-primary-foreground" onClick={handleDownloadPDF} disabled={isDownloading}>
-          {isDownloading ? (
-            <>
-              <div className="w-4 h-4 mr-2 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
-              Generating PDF...
-            </>
-          ) : (
-            <>
-              <Download className="w-4 h-4 mr-2" />
-              Download PDF
-            </>
-          )}
-        </Button>
       </div>
     </motion.div>
   );
@@ -566,7 +479,21 @@ const CourseDetail = () => {
   return (
     <div className="p-6 lg:p-8 max-w-5xl mx-auto space-y-6">
       {showCertificate && isCompleted && (
-        <CertificateModal course={course} userProgress={courseProgress} userName={user.name} userId={user.uid} onClose={() => setShowCertificate(false)} />
+        <>
+          <div className="fixed top-0 left-0 -z-50 pointer-events-none" aria-hidden="true">
+            <Certificate 
+              id="certificate-capture"
+              userName={user.name}
+              courseTitle={course.title}
+              score={courseProgress.quizScore}
+              grade={courseProgress.quizScore >= 85 ? "Distinction" : "Pass"}
+              date={courseProgress.certificateDate ? new Date(courseProgress.certificateDate).toLocaleDateString() : new Date().toLocaleDateString()}
+              certId={"CAPTURING"} // Placeholder for capture
+              verificationUrl={`${window.location.origin}/verify/CAPTURING`}
+            />
+          </div>
+          <CertificateModal course={course} userProgress={courseProgress} userName={user.name} userId={user.uid} onClose={() => setShowCertificate(false)} />
+        </>
       )}
 
       <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="flex items-center gap-4">

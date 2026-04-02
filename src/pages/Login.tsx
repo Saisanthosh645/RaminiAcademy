@@ -8,7 +8,8 @@ import { Label } from "@/components/ui/label";
 import { GraduationCap, Mail, Lock, Loader2, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { sendPasswordResetEmail } from "firebase/auth";
-import { auth } from "@/firebase/auth";
+import { auth, googleProvider } from "@/firebase/auth";
+import { LoadingScreen } from "@/components/LoadingScreen";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -61,6 +62,10 @@ const Login = () => {
       setForgotLoading(false);
     }
   };
+
+  if (isLoading && !user) {
+    return <LoadingScreen message="Checking your session..." fullScreen />;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4" style={{ background: "var(--gradient-hero)" }}>

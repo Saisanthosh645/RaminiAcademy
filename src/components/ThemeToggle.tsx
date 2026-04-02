@@ -11,6 +11,25 @@ import {
 export function ThemeToggle() {
   const { setTheme } = useTheme();
 
+  const handleThemeChange = (newTheme: string, e: React.MouseEvent) => {
+    // @ts-ignore
+    if (!document.startViewTransition) {
+      setTheme(newTheme);
+      return;
+    }
+
+    // Set the expansion point for the circular reveal
+    const x = e.clientX;
+    const y = e.clientY;
+    document.documentElement.style.setProperty("--x", `${x}px`);
+    document.documentElement.style.setProperty("--y", `${y}px`);
+
+    // @ts-ignore
+    document.startViewTransition(() => {
+      setTheme(newTheme);
+    });
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -21,9 +40,9 @@ export function ThemeToggle() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setTheme("light")}>Light</DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("dark")}>Dark</DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("system")}>System</DropdownMenuItem>
+        <DropdownMenuItem onClick={(e) => handleThemeChange("light", e)}>Light</DropdownMenuItem>
+        <DropdownMenuItem onClick={(e) => handleThemeChange("dark", e)}>Dark</DropdownMenuItem>
+        <DropdownMenuItem onClick={(e) => handleThemeChange("system", e)}>System</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

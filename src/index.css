@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -90,6 +90,7 @@
   body {
     @apply bg-background text-foreground font-sans;
     font-family: 'Inter', sans-serif;
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Space Grotesk', sans-serif;
@@ -118,4 +119,28 @@
   }
 }
 
+/* Circular Reveal Transition */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  z-index: 2;
+  animation: circle-reveal 0.6s ease-out forwards;
+}
+
+@keyframes circle-reveal {
+  from {
+    clip-path: circle(0% at var(--x) var(--y));
+  }
+  to {
+    clip-path: circle(150% at var(--x) var(--y));
+  }
+}
 
