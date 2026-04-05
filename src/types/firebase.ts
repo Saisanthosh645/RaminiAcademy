@@ -89,6 +89,8 @@ export interface Course {
   isBestSeller?: boolean;
   syllabus?: SyllabusItem[];
   isPaid?: boolean;
+  capacity?: number;
+  enrolledCount?: number;
 }
 
 export interface CourseProgress {

@@ -79,6 +79,7 @@ const Courses = () => {
             {allCourses.map((course, i) => {
               const isPaid = isPurchased(course.id);
               const discount = course.originalPrice ? Math.round(((course.originalPrice - course.price) / course.originalPrice) * 100) : 0;
+              const isFull = course.capacity !== undefined && course.enrolledCount !== undefined && course.enrolledCount >= course.capacity;
 
               return (
                 <motion.div
@@ -89,13 +90,18 @@ const Courses = () => {
                   whileHover={{ y: -8 }}
                   className="h-full"
                 >
-                  <Card className="glass-card rounded-2xl overflow-hidden group h-full flex flex-col hover:shadow-lg transition-shadow relative border border-border/50">
+                  <Card className={`glass-card rounded-2xl overflow-hidden group h-full flex flex-col hover:shadow-lg transition-shadow relative border border-border/50 ${isFull ? 'opacity-75' : ''}`}>
                     {/* Badges */}
                     <div className="absolute top-4 right-4 z-10 flex flex-col items-end gap-2">
                       <div className="flex gap-2">
                         {isPaid && (
                           <Badge className="gradient-bg text-primary-foreground gap-1">
                             <CheckCircle2 className="w-3 h-3" /> Purchased
+                          </Badge>
+                        )}
+                        {isFull && (
+                          <Badge className="bg-red-500 text-white gap-1">
+                            Full
                           </Badge>
                         )}
                         <Badge variant="outline" className="bg-background shadow-sm border-border/50">
@@ -177,11 +183,32 @@ const Courses = () => {
                     {/* Actions */}
                     <div className="p-6 pt-0 space-y-2">
                       <Button
-                        onClick={() => setSelectedCourse(course)}
+                        onClick={() => {
+                          if (isFull && (course.id === "web-dev-basics" || course.id === "dsa-python")) {
+                            toast({
+                              title: "Seats Filled",
+                              description: "Sorry, all seats for this course are currently filled. Please check back later or contact support.",
+                              variant: "destructive",
+                            });
+                            return;
+                          }
+                          if (!isFull) {
+                            setSelectedCourse(course);
+                          }
+                        }}
                         variant={isPaid ? "outline" : "default"}
-                        className={`w-full ${isPaid ? "" : "gradient-bg text-primary-foreground"} gap-2`}
+                        className={`w-full ${isPaid ? "" : (isFull && (course.id === "web-dev-basics" || course.id === "dsa-python")) ? "bg-orange-500 hover:bg-orange-600 text-white" : isFull ? "bg-red-500 text-white cursor-not-allowed" : "gradient-bg text-primary-foreground"} gap-2`}
+                        disabled={isFull && !(course.id === "web-dev-basics" || course.id === "dsa-python")}
                       >
-                        {isPaid ? (
+                        {isFull && (course.id === "web-dev-basics" || course.id === "dsa-python") ? (
+                          <>
+                            Seats Filled
+                          </>
+                        ) : isFull ? (
+                          <>
+                            Full
+                          </>
+                        ) : isPaid ? (
                           <>
                             <CheckCircle2 className="w-4 h-4" /> View Course
                           </>

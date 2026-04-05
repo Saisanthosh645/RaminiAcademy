@@ -63,6 +63,8 @@ const courses = [
     totalClasses: 18,
     completedClasses: 0,
     progress: 0,
+    capacity: 50,
+    enrolledCount: 50,
     schedule: [
       { id: '1', topic: 'HTML Fundamentals', date: '2024-10-02', time: '8PM', status: 'upcoming', zoomLink: 'https://zoom.us/j/123', recording: '' },
       // 4 more...
@@ -95,6 +97,8 @@ const courses = [
     totalClasses: 30,
     completedClasses: 0,
     progress: 0,
+    capacity: 40,
+    enrolledCount: 40,
     schedule: [
       // 5 sample
       { id: '1', topic: 'Arrays', date: '2024-10-04', time: '6PM', status: 'upcoming', zoomLink: '', recording: '' },

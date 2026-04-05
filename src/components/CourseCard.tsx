@@ -14,6 +14,7 @@ const CourseCard = ({ course, index }: CourseCardProps) => {
   const navigate = useNavigate();
   const hasLive = course.schedule.some((s) => s.status === "live");
   const discount = course.originalPrice ? Math.round(((course.originalPrice - course.price) / course.originalPrice) * 100) : 0;
+  const isFull = course.capacity !== undefined && course.enrolledCount !== undefined && course.enrolledCount >= course.capacity;
 
   return (
     <motion.div
@@ -21,7 +22,7 @@ const CourseCard = ({ course, index }: CourseCardProps) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: index * 0.1 }}
       whileHover={{ y: -4, transition: { duration: 0.2 } }}
-      className="glass-card rounded-2xl p-6 glow-border cursor-pointer group relative overflow-hidden"
+      className={`glass-card rounded-2xl p-6 glow-border cursor-pointer group relative overflow-hidden ${isFull ? 'opacity-75' : ''}`}
       onClick={() => navigate(`/courses/${course.id}`)}
     >
       <div className="absolute top-4 right-4 flex flex-col items-end gap-2 z-20">
@@ -29,6 +30,11 @@ const CourseCard = ({ course, index }: CourseCardProps) => {
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-destructive/10 text-destructive text-[10px] font-bold uppercase tracking-wider backdrop-blur-md border border-destructive/20 shadow-sm">
             <Radio className="w-3 h-3 animate-pulse" />
             Live Now
+          </div>
+        )}
+        {isFull && (
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500/10 text-red-500 text-[10px] font-bold uppercase tracking-wider backdrop-blur-md border border-red-500/20 shadow-sm">
+            Full
           </div>
         )}
         {discount > 0 && (
@@ -83,9 +89,9 @@ const CourseCard = ({ course, index }: CourseCardProps) => {
         </div>
       </div>
 
-      <Button variant="ghost" className="w-full justify-between text-primary group-hover:bg-primary/5">
-        Continue Learning
-        <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+      <Button variant="ghost" className={`w-full justify-between ${isFull ? 'text-red-500 cursor-not-allowed' : 'text-primary group-hover:bg-primary/5'}`}>
+        {isFull ? 'Full' : 'Continue Learning'}
+        {!isFull && <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />}
       </Button>
     </motion.div>
   );

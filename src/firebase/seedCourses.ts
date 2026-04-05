@@ -89,6 +89,8 @@ const courses: Course[] = [
     completedClasses: 0,
     price: 99,
     originalPrice: 799,
+    capacity: 50,
+    enrolledCount: 50,
     syllabus: [
       { week: 1, topic: "HTML Essentials", description: "Semantic HTML5, forms, accessibility" },
       { week: 2, topic: "CSS Fundamentals", description: "Selectors, box model, positioning" },
@@ -140,6 +142,8 @@ const courses: Course[] = [
     completedClasses: 0,
     price: 99,
     originalPrice: 499,
+    capacity: 40,
+    enrolledCount: 40,
     syllabus: [
       { week: 1, topic: "Arrays & Lists", description: "Operations, complexity, searching" },
       { week: 2, topic: "Stacks & Queues", description: "Implementation, use cases" },
