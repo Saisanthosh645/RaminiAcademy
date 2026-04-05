@@ -1,55 +1,75 @@
 export const getLessonQuestions = (topic: string): Array<{ question: string; options: string[]; correctAnswer: number }> => {
   const dictionary: Record<string, Array<{ question: string; options: string[]; correctAnswer: number }>> = {
     // Python
-    "Python Setup & Syntax": [
-      { question: "Which command runs a python file?", options: ["python run", "python file.py", "run file.py", "execute py"], correctAnswer: 1 },
-      { question: "What is the correct extension for a Python file?", options: [".pt", ".pyth", ".py", ".p"], correctAnswer: 2 },
-      { question: "How do you output text to the console in Python?", options: ["console.log()", "print()", "echo()", "write()"], correctAnswer: 1 }
+    "Python Setup & Basics": [
+      { question: "What is Python?", options: ["Operating system", "A programming language", "A video player", "A web browser"], correctAnswer: 1 },
+      { question: "Which function is used to display output?", options: ["display()", "print()", "output()", "show()"], correctAnswer: 1 },
+      { question: "What does input() do?", options: ["Displays output", "Imports modules", "Takes user input", "Defines variables"], correctAnswer: 2 },
+      { question: "What is a variable?", options: ["A function", "A container to store data", "A loop", "A module"], correctAnswer: 1 },
+      { question: "Which symbol is used for comments?", options: ["//", "#", "/*", "--"], correctAnswer: 1 }
     ],
-    "Data Types & Structures": [
-      { question: "Which is a mutable type in Python?", options: ["Tuple", "String", "List", "Integer"], correctAnswer: 2 },
-      { question: "How do you define a dictionary?", options: ["{}", "[]", "()", "<>"], correctAnswer: 0 },
-      { question: "Which method adds an item to the end of a list?", options: ["push()", "add()", "insert()", "append()"], correctAnswer: 3 }
+    "Data Types & Variables": [
+      { question: "What is the data type of 10?", options: ["String", "Float", "Integer (int)", "Boolean"], correctAnswer: 2 },
+      { question: "What is the data type of 'Hello'?", options: ["Integer", "String (str)", "List", "Dictionary"], correctAnswer: 1 },
+      { question: "What is the data type of True?", options: ["String", "Integer", "Boolean (bool)", "Float"], correctAnswer: 2 },
+      { question: "What is the output of 5 + 2 * 3?", options: ["21", "11", "17", "15"], correctAnswer: 1 },
+      { question: "What is the output of '5' + '5'?", options: ["10", "'10'", "'55'", "Error"], correctAnswer: 2 }
     ],
-    "Control Flow": [
-      { question: "Which keyword breaks out of a loop?", options: ["stop", "exit", "break", "return"], correctAnswer: 2 },
-      { question: "Which statement is used to handle conditional execution?", options: ["switch", "if...elif...else", "case", "when"], correctAnswer: 1 },
-      { question: "What is the output of range(3)?", options: ["[1, 2, 3]", "[0, 1, 2]", "[0, 1, 2, 3]", "[1, 2]"], correctAnswer: 1 }
+    "Lists, Tuples, Sets & Dictionaries": [
+      { question: "Which data type is ordered and changeable?", options: ["Tuple", "String", "List", "Set"], correctAnswer: 2 },
+      { question: "Which data type is immutable?", options: ["List", "Dictionary", "Set", "Tuple"], correctAnswer: 3 },
+      { question: "Which data type stores unique values only?", options: ["List", "Dictionary", "Set", "Tuple"], correctAnswer: 2 },
+      { question: "Which data type uses key-value pairs?", options: ["List", "Tuple", "Set", "Dictionary"], correctAnswer: 3 },
+      { question: "How do you access the first element of list a=[10,20]?", options: ["a[1]", "a[0]", "a(0)", "a.first"], correctAnswer: 1 }
     ],
-    "Functions & Modules": [
-      { question: "What keyword defines a function?", options: ["func", "function", "def", "define"], correctAnswer: 2 },
-      { question: "How do you import a module in Python?", options: ["include", "import", "using", "require"], correctAnswer: 1 },
-      { question: "What does the 'return' keyword do?", options: ["Ends the script", "Outputs to console", "Exits the function and passes back a value", "Starts a loop"], correctAnswer: 2 }
+    "Conditional Statements (if-else)": [
+      { question: "Which keyword is used for condition checking?", options: ["when", "if", "check", "condition"], correctAnswer: 1 },
+      { question: "What does elif mean?", options: ["Else if", "End if", "Else in", "And if"], correctAnswer: 0 },
+      { question: "What is the output of: if 5 > 3: print('Yes')", options: ["No", "5 > 3", "Yes", "Error"], correctAnswer: 2 },
+      { question: "AND operator returns true when?", options: ["One condition is true", "Both conditions are true", "Any condition is true", "No condition is true"], correctAnswer: 1 },
+      { question: "What does NOT operator do?", options: ["Combines conditions", "Reverses condition", "Checks equality", "Compares values"], correctAnswer: 1 }
     ],
-    "Object-Oriented Python": [
-      { question: "What refers to the instance of a class?", options: ["self", "this", "cls", "instance"], correctAnswer: 0 },
-      { question: "What is a constructor method named in python?", options: ["__init__", "constructor", "init", "__start__"], correctAnswer: 0 },
-      { question: "Which principle allows a class to inherit methods from another?", options: ["Polymorphism", "Encapsulation", "Inheritance", "Abstraction"], correctAnswer: 2 }
+    "Loops (for & while)": [
+      { question: "Which loop is used for fixed iterations?", options: ["while loop", "for loop", "do-while loop", "repeat loop"], correctAnswer: 1 },
+      { question: "Which loop runs until condition is false?", options: ["for loop", "repeat loop", "while loop", "foreach loop"], correctAnswer: 2 },
+      { question: "What is the output of range(3)?", options: ["1,2,3", "0,1,2,3", "0,1,2", "3"], correctAnswer: 2 },
+      { question: "What does break do?", options: ["Skips current iteration", "Stops loop", "Restarts loop", "Continues to next"], correctAnswer: 1 },
+      { question: "What does continue do?", options: ["Stops loop", "Skips current iteration", "Restarts loop", "Ends program"], correctAnswer: 1 }
     ],
-    "File Handling": [
-      { question: "Which mode is used to exclusively write a new file?", options: ["'w'", "'r'", "'x'", "'a'"], correctAnswer: 0 },
-      { question: "Which keyword ensures a file is closed automatically?", options: ["close", "ensure", "finally", "with"], correctAnswer: 3 },
-      { question: "How do you read all lines into a list?", options: ["readAll()", "readLines()", "readlines()", "fetch()"], correctAnswer: 2 }
+    "Functions in Python": [
+      { question: "What keyword is used to define a function?", options: ["func", "function", "def", "declare"], correctAnswer: 2 },
+      { question: "What is a parameter?", options: ["Output of function", "Input to function", "Return value", "Variable name"], correctAnswer: 1 },
+      { question: "What does return do?", options: ["Sends value back", "Exits program", "Prints value", "Stores value"], correctAnswer: 0 },
+      { question: "Functions help in?", options: ["Creating loops", "Code reuse", "Storing data", "Displaying output"], correctAnswer: 1 },
+      { question: "Can a function return multiple values?", options: ["No", "Yes", "Only in classes", "Not recommended"], correctAnswer: 1 }
     ],
-    "Web Scraping": [
-      { question: "Which library is common for web scraping?", options: ["pandas", "numpy", "BeautifulSoup", "django"], correctAnswer: 2 },
-      { question: "Which library fetches web pages via HTTP?", options: ["requests", "http", "fetch", "web"], correctAnswer: 0 },
-      { question: "What does HTML stand for?", options: ["Hyper Text Markup Language", "High Tech Machine Language", "Hyperlinks Text Mark Language", "None of the above"], correctAnswer: 0 }
+    "Modules & File Handling": [
+      { question: "What keyword is used to import a module?", options: ["include", "using", "import", "require"], correctAnswer: 2 },
+      { question: "Which module gives random numbers?", options: ["math", "random", "statistics", "datetime"], correctAnswer: 1 },
+      { question: "What is open() used for?", options: ["Opening applications", "File handling", "Opening websites", "Opening databases"], correctAnswer: 1 },
+      { question: "What does 'r' mode mean?", options: ["Read", "Write", "Run", "Remove"], correctAnswer: 0 },
+      { question: "What does 'w' mode mean?", options: ["Wait", "Read", "Write", "Watch"], correctAnswer: 2 }
     ],
-    "APIs & Requests": [
-      { question: "Which status code means 'OK'?", options: ["404", "500", "200", "301"], correctAnswer: 2 },
-      { question: "What data format is commonly used in REST APIs?", options: ["XML", "JSON", "CSV", "Text"], correctAnswer: 1 },
-      { question: "Which request method is used to CREATE data?", options: ["GET", "PUT", "DELETE", "POST"], correctAnswer: 3 }
+    "Error Handling & Debugging": [
+      { question: "Which block handles errors?", options: ["try", "except", "finally", "else"], correctAnswer: 1 },
+      { question: "Which block contains risky code?", options: ["except", "try", "finally", "else"], correctAnswer: 1 },
+      { question: "What error occurs when dividing by zero?", options: ["ValueError", "ZeroDivisionError", "TypeError", "NameError"], correctAnswer: 1 },
+      { question: "What is debugging?", options: ["Writing code", "Finding and fixing errors", "Testing code", "Documenting code"], correctAnswer: 1 },
+      { question: "When does finally block run?", options: ["Only on error", "Only on success", "Always", "Never"], correctAnswer: 2 }
     ],
-    "Error Handling & Testing": [
-      { question: "Which block executes despite any exceptions?", options: ["try", "except", "else", "finally"], correctAnswer: 3 },
-      { question: "How do you catch all exceptions in Python?", options: ["except Exception:", "catch All:", "except:", "Both 0 and 2"], correctAnswer: 3 },
-      { question: "Which keyword raises a custom error?", options: ["throw", "generate", "raise", "error"], correctAnswer: 2 }
+    "Intro to OOP (Classes & Objects) ⭐": [
+      { question: "What is a class?", options: ["An object", "A blueprint", "A function", "A module"], correctAnswer: 1 },
+      { question: "What is an object?", options: ["A blueprint", "Instance of class", "A function", "A variable"], correctAnswer: 1 },
+      { question: "What is __init__?", options: ["Initializer", "Constructor", "A method", "Both B and C"], correctAnswer: 3 },
+      { question: "What does self refer to?", options: ["The class", "Current object", "Other objects", "The module"], correctAnswer: 1 },
+      { question: "OOP helps in?", options: ["Organizing code", "Code reuse", "Making code modular", "All of above"], correctAnswer: 3 }
     ],
-    "Final Project": [
-      { question: "What is the most important part of a project?", options: ["Testing", "Planning", "Execution", "All of the above"], correctAnswer: 3 },
-      { question: "What does MVP stand for?", options: ["Most Valuable Player", "Minimum Viable Product", "Maximum Variable Process", "Multiple View Pages"], correctAnswer: 1 },
-      { question: "Are you ready to submit?", options: ["Yes", "No", "Maybe", "Refactoring"], correctAnswer: 0 }
+    "Final Project & Revision": [
+      { question: "Which concept is used for repetition?", options: ["Functions", "Loops", "Classes", "Modules"], correctAnswer: 1 },
+      { question: "Which concept is used to reuse code?", options: ["Loops", "Classes", "Functions", "Variables"], correctAnswer: 2 },
+      { question: "Which concept stores data permanently?", options: ["Variables", "Functions", "File handling", "Classes"], correctAnswer: 2 },
+      { question: "Which concept organizes code into objects?", options: ["Functions", "Modules", "OOP", "Loops"], correctAnswer: 2 },
+      { question: "What is testing?", options: ["Writing code", "Checking program correctness", "Debugging code", "Documenting code"], correctAnswer: 1 }
     ],
 
     // Web Dev

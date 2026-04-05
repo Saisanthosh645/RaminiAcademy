@@ -26,11 +26,11 @@ const courses = [
     completedClasses: 0,
     progress: 0,
     schedule: [
-      { id: '1', topic: 'Python Basics', date: '2024-10-01', time: '7PM', status: 'upcoming', zoomLink: 'https://zoom.us/j/123', recording: '' },
-      { id: '2', topic: 'Functions & Loops', date: '2024-10-03', time: '7PM', status: 'upcoming', zoomLink: 'https://zoom.us/j/123', recording: '' },
-      { id: '3', topic: 'Lists & Dicts', date: '2024-10-05', time: '7PM', status: 'upcoming', zoomLink: 'https://zoom.us/j/123', recording: '' },
-      { id: '4', topic: 'File Handling', date: '2024-10-08', time: '7PM', status: 'live', zoomLink: 'https://zoom.us/j/123', recording: 'https://recording1' },
-      { id: '5', topic: 'OOP Concepts', date: '2024-10-10', time: '7PM', status: 'completed', zoomLink: '', recording: 'https://recording2' },
+      { id: '1', topic: 'Python Setup & Basics', date: '2024-10-01', time: '7PM', status: 'upcoming', zoomLink: 'https://zoom.us/j/123', recording: '' },
+      { id: '2', topic: 'Data Types & Variables', date: '2024-10-03', time: '7PM', status: 'upcoming', zoomLink: 'https://zoom.us/j/123', recording: '' },
+      { id: '3', topic: 'Lists, Tuples, Sets & Dictionaries', date: '2024-10-05', time: '7PM', status: 'upcoming', zoomLink: 'https://zoom.us/j/123', recording: '' },
+      { id: '4', topic: 'Conditional Statements (if-else)', date: '2024-10-08', time: '7PM', status: 'live', zoomLink: 'https://zoom.us/j/123', recording: 'https://recording1' },
+      { id: '5', topic: 'Loops (for & while)', date: '2024-10-10', time: '7PM', status: 'completed', zoomLink: '', recording: 'https://recording2' },
     ],
     notes: [
       { id: 'n1', title: 'Python Setup Guide', fileUrl: 'https://example.com/python-setup.pdf' },

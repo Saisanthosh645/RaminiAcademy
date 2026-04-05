@@ -32,16 +32,16 @@ const courses: Course[] = [
       { week: 8, topic: "Database Basics", description: "SQL, SQLite, database integration" }
     ],
     schedule: [
-      { id: "py-1", topic: "Python Setup & Syntax", date: "2026-04-16", time: "7:00 PM", status: "upcoming", meetLink: getZoomLink("python-zero-hero") },
-      { id: "py-2", topic: "Data Types & Structures", date: "2026-04-23", time: "7:00 PM", status: "upcoming", meetLink: getZoomLink("python-zero-hero") },
-      { id: "py-3", topic: "Control Flow", date: "2026-04-30", time: "7:00 PM", status: "upcoming", meetLink: getZoomLink("python-zero-hero") },
-      { id: "py-4", topic: "Functions & Modules", date: "2026-05-07", time: "7:00 PM", status: "upcoming", meetLink: getZoomLink("python-zero-hero") },
-      { id: "py-5", topic: "Object-Oriented Python", date: "2026-05-14", time: "7:00 PM", status: "upcoming", meetLink: getZoomLink("python-zero-hero") },
-      { id: "py-6", topic: "File Handling", date: "2026-05-21", time: "7:00 PM", status: "upcoming", meetLink: getZoomLink("python-zero-hero") },
-      { id: "py-7", topic: "Web Scraping", date: "2026-05-28", time: "7:00 PM", status: "upcoming", meetLink: getZoomLink("python-zero-hero") },
-      { id: "py-8", topic: "APIs & Requests", date: "2026-06-04", time: "7:00 PM", status: "upcoming", meetLink: getZoomLink("python-zero-hero") },
-      { id: "py-9", topic: "Error Handling & Testing", date: "2026-06-11", time: "7:00 PM", status: "upcoming", meetLink: getZoomLink("python-zero-hero") },
-      { id: "py-10", topic: "Final Project", date: "2026-06-18", time: "7:00 PM", status: "upcoming", meetLink: getZoomLink("python-zero-hero") }
+      { id: "py-1", topic: "Python Setup & Basics", date: "2026-04-16", time: "7:00 PM", status: "upcoming", meetLink: getZoomLink("python-zero-hero") },
+      { id: "py-2", topic: "Data Types & Variables", date: "2026-04-23", time: "7:00 PM", status: "upcoming", meetLink: getZoomLink("python-zero-hero") },
+      { id: "py-3", topic: "Lists, Tuples, Sets & Dictionaries", date: "2026-04-30", time: "7:00 PM", status: "upcoming", meetLink: getZoomLink("python-zero-hero") },
+      { id: "py-4", topic: "Conditional Statements (if-else)", date: "2026-05-07", time: "7:00 PM", status: "upcoming", meetLink: getZoomLink("python-zero-hero") },
+      { id: "py-5", topic: "Loops (for & while)", date: "2026-05-14", time: "7:00 PM", status: "upcoming", meetLink: getZoomLink("python-zero-hero") },
+      { id: "py-6", topic: "Functions in Python", date: "2026-05-21", time: "7:00 PM", status: "upcoming", meetLink: getZoomLink("python-zero-hero") },
+      { id: "py-7", topic: "Modules & File Handling", date: "2026-05-28", time: "7:00 PM", status: "upcoming", meetLink: getZoomLink("python-zero-hero") },
+      { id: "py-8", topic: "Error Handling & Debugging", date: "2026-06-04", time: "7:00 PM", status: "upcoming", meetLink: getZoomLink("python-zero-hero") },
+      { id: "py-9", topic: "Intro to OOP (Classes & Objects) ⭐", date: "2026-06-11", time: "7:00 PM", status: "upcoming", meetLink: getZoomLink("python-zero-hero") },
+      { id: "py-10", topic: "Final Project & Revision", date: "2026-06-18", time: "7:00 PM", status: "upcoming", meetLink: getZoomLink("python-zero-hero") }
     ],
     notes: [
       { id: "py-note-1", title: "Python Syntax & Basic Data Types", description: "Comprehensive guide to strings, integers, floats, and boolean logic in Python.", fileUrl: "https://docs.python.org/3/tutorial/introduction.html", type: "pdf" },
