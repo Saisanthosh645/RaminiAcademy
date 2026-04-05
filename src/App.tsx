@@ -20,6 +20,7 @@ import Profile from "@/pages/Profile";
 import Schedule from "@/pages/Schedule";
 import VerifyCertificate from "@/pages/VerifyCertificate";
 import NotFound from "@/pages/NotFound";
+import Admin from "@/pages/Admin";
 import { coursesCollection } from "@/firebase/firestore";
 import { seedCourses } from "@/firebase/seedCourses";
 import TestCert from "@/pages/TestCert";
@@ -75,6 +76,7 @@ const AppContent = () => {
           <Route path="/course/:courseId" element={<CourseDetail />} />
           <Route path="/schedule" element={<Schedule />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/admin" element={<Admin />} />
         </Route>
         <Route path="/verify/:certificateId" element={<VerifyCertificate />} />
         <Route path="/test-cert" element={<TestCert />} />

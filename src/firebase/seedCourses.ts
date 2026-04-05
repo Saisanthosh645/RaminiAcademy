@@ -1,6 +1,7 @@
 import { setDoc } from "firebase/firestore";
 import { coursesRef } from "@/firebase/firestore";
 import type { Course } from "@/types/firebase";
+import { getZoomLink, getCapacity, getEnrolledCount } from "@/config/courseConfig";
 
 const instructor = "Ramini Academy";
 
@@ -31,16 +32,16 @@ const courses: Course[] = [
       { week: 8, topic: "Database Basics", description: "SQL, SQLite, database integration" }
     ],
     schedule: [
-      { id: "py-1", topic: "Python Setup & Syntax", date: "2026-04-16", time: "7:00 PM", status: "upcoming", meetLink: "https://zoom.us/j/1234567890" },
-      { id: "py-2", topic: "Data Types & Structures", date: "2026-04-23", time: "7:00 PM", status: "upcoming", meetLink: "https://zoom.us/j/1234567890" },
-      { id: "py-3", topic: "Control Flow", date: "2026-04-30", time: "7:00 PM", status: "upcoming", meetLink: "https://zoom.us/j/1234567890" },
-      { id: "py-4", topic: "Functions & Modules", date: "2026-05-07", time: "7:00 PM", status: "upcoming", meetLink: "https://zoom.us/j/1234567890" },
-      { id: "py-5", topic: "Object-Oriented Python", date: "2026-05-14", time: "7:00 PM", status: "upcoming", meetLink: "https://zoom.us/j/1234567890" },
-      { id: "py-6", topic: "File Handling", date: "2026-05-21", time: "7:00 PM", status: "upcoming", meetLink: "https://zoom.us/j/1234567890" },
-      { id: "py-7", topic: "Web Scraping", date: "2026-05-28", time: "7:00 PM", status: "upcoming", meetLink: "https://zoom.us/j/1234567890" },
-      { id: "py-8", topic: "APIs & Requests", date: "2026-06-04", time: "7:00 PM", status: "upcoming", meetLink: "https://zoom.us/j/1234567890" },
-      { id: "py-9", topic: "Error Handling & Testing", date: "2026-06-11", time: "7:00 PM", status: "upcoming", meetLink: "https://zoom.us/j/1234567890" },
-      { id: "py-10", topic: "Final Project", date: "2026-06-18", time: "7:00 PM", status: "upcoming", meetLink: "https://zoom.us/j/1234567890" }
+      { id: "py-1", topic: "Python Setup & Syntax", date: "2026-04-16", time: "7:00 PM", status: "upcoming", meetLink: getZoomLink("python-zero-hero") },
+      { id: "py-2", topic: "Data Types & Structures", date: "2026-04-23", time: "7:00 PM", status: "upcoming", meetLink: getZoomLink("python-zero-hero") },
+      { id: "py-3", topic: "Control Flow", date: "2026-04-30", time: "7:00 PM", status: "upcoming", meetLink: getZoomLink("python-zero-hero") },
+      { id: "py-4", topic: "Functions & Modules", date: "2026-05-07", time: "7:00 PM", status: "upcoming", meetLink: getZoomLink("python-zero-hero") },
+      { id: "py-5", topic: "Object-Oriented Python", date: "2026-05-14", time: "7:00 PM", status: "upcoming", meetLink: getZoomLink("python-zero-hero") },
+      { id: "py-6", topic: "File Handling", date: "2026-05-21", time: "7:00 PM", status: "upcoming", meetLink: getZoomLink("python-zero-hero") },
+      { id: "py-7", topic: "Web Scraping", date: "2026-05-28", time: "7:00 PM", status: "upcoming", meetLink: getZoomLink("python-zero-hero") },
+      { id: "py-8", topic: "APIs & Requests", date: "2026-06-04", time: "7:00 PM", status: "upcoming", meetLink: getZoomLink("python-zero-hero") },
+      { id: "py-9", topic: "Error Handling & Testing", date: "2026-06-11", time: "7:00 PM", status: "upcoming", meetLink: getZoomLink("python-zero-hero") },
+      { id: "py-10", topic: "Final Project", date: "2026-06-18", time: "7:00 PM", status: "upcoming", meetLink: getZoomLink("python-zero-hero") }
     ],
     notes: [
       { id: "py-note-1", title: "Python Syntax & Basic Data Types", description: "Comprehensive guide to strings, integers, floats, and boolean logic in Python.", fileUrl: "https://docs.python.org/3/tutorial/introduction.html", type: "pdf" },
@@ -89,8 +90,8 @@ const courses: Course[] = [
     completedClasses: 0,
     price: 99,
     originalPrice: 799,
-    capacity: 50,
-    enrolledCount: 50,
+    capacity: getCapacity("web-dev-basics"),
+    enrolledCount: getEnrolledCount("web-dev-basics"),
     syllabus: [
       { week: 1, topic: "HTML Essentials", description: "Semantic HTML5, forms, accessibility" },
       { week: 2, topic: "CSS Fundamentals", description: "Selectors, box model, positioning" },
@@ -102,14 +103,14 @@ const courses: Course[] = [
       { week: 8, topic: "Real Project Build", description: "Portfolio website showcase" }
     ],
     schedule: [
-      { id: "web-1", topic: "HTML Structure", date: "2026-04-16", time: "8:15 PM", status: "upcoming", meetLink: "https://zoom.us/j/2345678901" },
-      { id: "web-2", topic: "CSS Layouts", date: "2026-04-23", time: "8:15 PM", status: "upcoming", meetLink: "https://zoom.us/j/2345678901" },
-      { id: "web-3", topic: "JavaScript Fundamentals", date: "2026-04-30", time: "8:15 PM", status: "upcoming", meetLink: "https://zoom.us/j/2345678901" },
-      { id: "web-4", topic: "DOM Manipulation", date: "2026-05-07", time: "8:15 PM", status: "upcoming", meetLink: "https://zoom.us/j/2345678901" },
-      { id: "web-5", topic: "CSS Flexbox & Grid", date: "2026-05-14", time: "8:15 PM", status: "upcoming", meetLink: "https://zoom.us/j/2345678901" },
-      { id: "web-6", topic: "Responsive Design", date: "2026-05-21", time: "8:15 PM", status: "upcoming", meetLink: "https://zoom.us/j/2345678901" },
-      { id: "web-7", topic: "Intro to ES6", date: "2026-05-28", time: "8:15 PM", status: "upcoming", meetLink: "https://zoom.us/j/2345678901" },
-      { id: "web-8", topic: "Capstone Website", date: "2026-06-04", time: "8:15 PM", status: "upcoming", meetLink: "https://zoom.us/j/2345678901" }
+      { id: "web-1", topic: "HTML Structure", date: "2026-04-16", time: "8:15 PM", status: "upcoming", meetLink: getZoomLink("web-dev-basics") },
+      { id: "web-2", topic: "CSS Layouts", date: "2026-04-23", time: "8:15 PM", status: "upcoming", meetLink: getZoomLink("web-dev-basics") },
+      { id: "web-3", topic: "JavaScript Fundamentals", date: "2026-04-30", time: "8:15 PM", status: "upcoming", meetLink: getZoomLink("web-dev-basics") },
+      { id: "web-4", topic: "DOM Manipulation", date: "2026-05-07", time: "8:15 PM", status: "upcoming", meetLink: getZoomLink("web-dev-basics") },
+      { id: "web-5", topic: "CSS Flexbox & Grid", date: "2026-05-14", time: "8:15 PM", status: "upcoming", meetLink: getZoomLink("web-dev-basics") },
+      { id: "web-6", topic: "Responsive Design", date: "2026-05-21", time: "8:15 PM", status: "upcoming", meetLink: getZoomLink("web-dev-basics") },
+      { id: "web-7", topic: "Intro to ES6", date: "2026-05-28", time: "8:15 PM", status: "upcoming", meetLink: getZoomLink("web-dev-basics") },
+      { id: "web-8", topic: "Capstone Website", date: "2026-06-04", time: "8:15 PM", status: "upcoming", meetLink: getZoomLink("web-dev-basics") }
     ],
     notes: [
       { id: "web-note-1", title: "Semantic HTML5 Guide", description: "Why using the right tags matters for SEO and accessibility.", fileUrl: "https://developer.mozilla.org/en-US/docs/Glossary/Semantics#semantics_in_html", type: "pdf" },
@@ -142,8 +143,8 @@ const courses: Course[] = [
     completedClasses: 0,
     price: 99,
     originalPrice: 499,
-    capacity: 40,
-    enrolledCount: 40,
+    capacity: getCapacity("dsa-python"),
+    enrolledCount: getEnrolledCount("dsa-python"),
     syllabus: [
       { week: 1, topic: "Arrays & Lists", description: "Operations, complexity, searching" },
       { week: 2, topic: "Stacks & Queues", description: "Implementation, use cases" },
@@ -155,15 +156,15 @@ const courses: Course[] = [
       { week: 8, topic: "Dynamic Programming", description: "Memoization, bottom-up approach" }
     ],
     schedule: [
-      { id: "dsa-1", topic: "Arrays & Lists", date: "2026-04-17", time: "5:00 PM", status: "upcoming", meetLink: "https://zoom.us/j/3456789012" },
-      { id: "dsa-2", topic: "Stacks & Queues", date: "2026-04-24", time: "5:00 PM", status: "upcoming", meetLink: "https://zoom.us/j/3456789012" },
-      { id: "dsa-3", topic: "Recursion", date: "2026-05-01", time: "5:00 PM", status: "upcoming", meetLink: "https://zoom.us/j/3456789012" },
-      { id: "dsa-4", topic: "Trees", date: "2026-05-08", time: "5:00 PM", status: "upcoming", meetLink: "https://zoom.us/j/3456789012" },
-      { id: "dsa-5", topic: "Graphs", date: "2026-05-15", time: "5:00 PM", status: "upcoming", meetLink: "https://zoom.us/j/3456789012" },
-      { id: "dsa-6", topic: "Sorting Algorithms", date: "2026-05-22", time: "5:00 PM", status: "upcoming", meetLink: "https://zoom.us/j/3456789012" },
-      { id: "dsa-7", topic: "Searching Algorithms", date: "2026-05-29", time: "5:00 PM", status: "upcoming", meetLink: "https://zoom.us/j/3456789012" },
-      { id: "dsa-8", topic: "Dynamic Programming", date: "2026-06-05", time: "5:00 PM", status: "upcoming", meetLink: "https://zoom.us/j/3456789012" },
-      { id: "dsa-9", topic: "Interview Problems", date: "2026-06-12", time: "5:00 PM", status: "upcoming", meetLink: "https://zoom.us/j/3456789012" }
+      { id: "dsa-1", topic: "Arrays & Lists", date: "2026-04-17", time: "5:00 PM", status: "upcoming", meetLink: getZoomLink("dsa-python") },
+      { id: "dsa-2", topic: "Stacks & Queues", date: "2026-04-24", time: "5:00 PM", status: "upcoming", meetLink: getZoomLink("dsa-python") },
+      { id: "dsa-3", topic: "Recursion", date: "2026-05-01", time: "5:00 PM", status: "upcoming", meetLink: getZoomLink("dsa-python") },
+      { id: "dsa-4", topic: "Trees", date: "2026-05-08", time: "5:00 PM", status: "upcoming", meetLink: getZoomLink("dsa-python") },
+      { id: "dsa-5", topic: "Graphs", date: "2026-05-15", time: "5:00 PM", status: "upcoming", meetLink: getZoomLink("dsa-python") },
+      { id: "dsa-6", topic: "Sorting Algorithms", date: "2026-05-22", time: "5:00 PM", status: "upcoming", meetLink: getZoomLink("dsa-python") },
+      { id: "dsa-7", topic: "Searching Algorithms", date: "2026-05-29", time: "5:00 PM", status: "upcoming", meetLink: getZoomLink("dsa-python") },
+      { id: "dsa-8", topic: "Dynamic Programming", date: "2026-06-05", time: "5:00 PM", status: "upcoming", meetLink: getZoomLink("dsa-python") },
+      { id: "dsa-9", topic: "Interview Problems", date: "2026-06-12", time: "5:00 PM", status: "upcoming", meetLink: getZoomLink("dsa-python") }
     ],
     notes: [
       { id: "dsa-note-1", title: "Big O Complexity Chart", description: "Visualizing time and space complexity for all core DSA patterns.", fileUrl: "https://www.bigocheatsheet.com/", type: "pdf" },
@@ -205,12 +206,12 @@ const courses: Course[] = [
       { week: 6, topic: "Productivity Automation", description: "Workflows, integrations, automation" }
     ],
     schedule: [
-      { id: "ai-1", topic: "Intro to AI Tools", date: "2026-04-16", time: "9:15 PM", status: "upcoming", meetLink: "https://zoom.us/j/4567890123" },
-      { id: "ai-2", topic: "Chatbots and Automation", date: "2026-04-23", time: "9:15 PM", status: "upcoming", meetLink: "https://zoom.us/j/4567890123" },
-      { id: "ai-3", topic: "AI Prompt Engineering", date: "2026-04-30", time: "9:15 PM", status: "upcoming", meetLink: "https://zoom.us/j/4567890123" },
-      { id: "ai-4", topic: "AI for Design", date: "2026-05-07", time: "9:15 PM", status: "upcoming", meetLink: "https://zoom.us/j/4567890123" },
-      { id: "ai-5", topic: "Productivity Bots", date: "2026-05-14", time: "9:15 PM", status: "upcoming", meetLink: "https://zoom.us/j/4567890123" },
-      { id: "ai-6", topic: "AI Ethics", date: "2026-05-21", time: "9:15 PM", status: "upcoming", meetLink: "https://zoom.us/j/4567890123" }
+      { id: "ai-1", topic: "Intro to AI Tools", date: "2026-04-16", time: "9:15 PM", status: "upcoming", meetLink: getZoomLink("ai-tools") },
+      { id: "ai-2", topic: "Chatbots and Automation", date: "2026-04-23", time: "9:15 PM", status: "upcoming", meetLink: getZoomLink("ai-tools") },
+      { id: "ai-3", topic: "AI Prompt Engineering", date: "2026-04-30", time: "9:15 PM", status: "upcoming", meetLink: getZoomLink("ai-tools") },
+      { id: "ai-4", topic: "AI for Design", date: "2026-05-07", time: "9:15 PM", status: "upcoming", meetLink: getZoomLink("ai-tools") },
+      { id: "ai-5", topic: "Productivity Bots", date: "2026-05-14", time: "9:15 PM", status: "upcoming", meetLink: getZoomLink("ai-tools") },
+      { id: "ai-6", topic: "AI Ethics", date: "2026-05-21", time: "9:15 PM", status: "upcoming", meetLink: getZoomLink("ai-tools") }
     ],
     notes: [
       { id: "ai-note-1", title: "Prompt Engineering Best Practices", description: "Frameworks for getting perfect results from LLMs every time.", fileUrl: "https://platform.openai.com/docs/guides/prompt-engineering", type: "pdf" },
