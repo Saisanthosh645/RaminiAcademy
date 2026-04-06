@@ -124,6 +124,9 @@ export interface User {
   paidCourses: string[]; // Courses user has paid for
   progress: Record<string, CourseProgress>;
   createdAt: Date;
+  emailVerified?: boolean;
+  role?: "student" | "teacher" | "admin";
+  twoFactorEnabled?: boolean;
 }
 
 export interface Certificate {

@@ -198,12 +198,12 @@ const courses: Course[] = [
     price: 99,
     originalPrice: 699,
     syllabus: [
-      { week: 1, topic: "AI Fundamentals & ChatGPT", description: "What is AI, prompt basics" },
-      { week: 2, topic: "Advanced Prompt Engineering", description: "Techniques for better outputs" },
-      { week: 3, topic: "Content Creation with AI", description: "Marketing, copywriting, ideas" },
-      { week: 4, topic: "Coding Assistance Tools", description: "GitHub Copilot, Code generation" },
-      { week: 5, topic: "Image & Design Generation", description: "DALL-E, Midjourney alternatives" },
-      { week: 6, topic: "Productivity Automation", description: "Workflows, integrations, automation" }
+      { week: 1, topic: "Basics of AI & ChatGPT", description: "Introduction to AI, understanding ChatGPT, how language models work" },
+      { week: 2, topic: "Better Prompt Writing", description: "Techniques for crafting effective prompts, prompt structure, advanced strategies" },
+      { week: 3, topic: "Creating Content with AI", description: "Content generation, copywriting, marketing, creative writing with AI" },
+      { week: 4, topic: "AI for Coding Help", description: "GitHub Copilot, code generation, debugging assistance, code optimization" },
+      { week: 5, topic: "AI Image Creation", description: "DALL-E, Midjourney, image prompting, design generation" },
+      { week: 6, topic: "AI for Daily Productivity", description: "Automation workflows, productivity hacks, time management with AI tools" }
     ],
     schedule: [
       { id: "ai-1", topic: "Intro to AI Tools", date: "2026-04-16", time: "9:15 PM", status: "upcoming", meetLink: getZoomLink("ai-tools") },

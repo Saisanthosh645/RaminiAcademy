@@ -24,12 +24,9 @@ import {
   IndianRupee,
   BookOpen,
   AlertCircle,
-  Trophy,
-  ArrowLeft,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { Course } from "@/types/firebase";
-import { Certificate } from "@/components/Certificate";
 import QRCode from "qrcode.react";
 
 const Courses = () => {
@@ -40,7 +37,6 @@ const Courses = () => {
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [paidCourses, setPaidCourses] = useState<string[]>(user?.paidCourses || []);
   const [isEnrolling, setIsEnrolling] = useState(false);
-  const [showSampleCert, setShowSampleCert] = useState(false);
 
   useEffect(() => {
     // Fetch all courses from Firebase
@@ -243,7 +239,6 @@ const Courses = () => {
             setSelectedCourse(null);
             setTimeout(() => {
               setIsEnrolling(false);
-              setShowSampleCert(false);
             }, 300);
           }
         }}
@@ -303,55 +298,6 @@ const Courses = () => {
                       Share Receipt on WhatsApp
                     </a>
                   </div>
-                </motion.div>
-              ) : showSampleCert ? (
-                <motion.div 
-                  key="sample" 
-                  initial={{ opacity: 0, scale: 0.95 }} 
-                  animate={{ opacity: 1, scale: 1 }} 
-                  exit={{ opacity: 0, scale: 0.95 }} 
-                  transition={{ duration: 0.3 }}
-                  className="flex flex-col items-center gap-6"
-                >
-                  <div className="text-center space-y-1 mt-2">
-                    <h3 className="text-xl font-bold font-display text-foreground">Sample Certificate Preview</h3>
-                    <p className="text-sm text-muted-foreground">This is the globally-recognized award you'll earn upon completion.</p>
-                  </div>
-
-                  <div className="relative w-full max-w-[600px] mx-auto rounded-xl shadow-2xl bg-white overflow-hidden border border-border/50 dark:border-white/10 p-8 flex items-center justify-center">
-                    <div 
-                      className="w-full relative"
-                      style={{ height: 'calc(min(90vw - 80px, 500px) * 794 / 1123)' }}
-                    >
-                      <div 
-                        className="absolute left-1/2 top-0 -translate-x-1/2 origin-top"
-                        style={{
-                          transform: `scale(calc(min(90vw - 80px, 500px) / 1123))`,
-                          width: "1123px",
-                          height: "794px"
-                        }}
-                      >
-                        <Certificate 
-                          userName="JOHN DOE"
-                          courseTitle={selectedCourse.title}
-                          score={98}
-                          grade="Distinction"
-                          date={new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}
-                          certId="SAMPLE-CERT-2024-XXXX"
-                          verificationUrl="https://nova-learn.vercel.app/verify"
-                          isSample={true}
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <Button 
-                    variant="outline" 
-                    className="w-full h-12 text-base border-primary/20 text-primary hover:bg-primary/5 gap-2"
-                    onClick={() => setShowSampleCert(false)}
-                  >
-                    <ArrowLeft className="w-4 h-4" /> Back to Details
-                  </Button>
                 </motion.div>
               ) : (
                 <motion.div key="details" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }} className="space-y-6">
@@ -440,15 +386,7 @@ const Courses = () => {
                           <p className="font-semibold text-card-foreground">Professional Certificate</p>
                         </div>
                       </div>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="h-8 text-[11px] font-bold uppercase tracking-widest text-primary hover:text-primary hover:bg-primary/10 gap-1.5"
-                        onClick={() => setShowSampleCert(true)}
-                      >
-                        <Trophy className="w-3 h-3" /> View Sample
-                      </Button>
-                    </div>
+                      </div>
                     <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg border border-border/50">
                       <Users className="w-5 h-5 text-primary" />
                       <div>

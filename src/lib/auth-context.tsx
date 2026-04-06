@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { onAuthChanged, loginEmail, signupEmail, loginGoogle, logout as firebaseLogout } from "@/firebase/auth";
+import { onAuthChanged, loginEmail, signupEmail, loginGoogle, logout as firebaseLogout, sendVerificationEmail } from "@/firebase/auth";
 import { updateProfile } from "firebase/auth";
 import { onSnapshot, setDoc, serverTimestamp } from "firebase/firestore";
 import { usersRef, userFromFirestoreSnapshot } from "@/firebase/firestore";
@@ -12,6 +12,8 @@ interface AuthContextType {
   signup: (name: string, email: string, password: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
+  sendEmailVerification: (email: string) => Promise<void>;
+  resendVerificationEmail: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -50,6 +52,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                   paidCourses: [],
                   progress: {},
                   createdAt: serverTimestamp(),
+                  emailVerified: firebaseUser.emailVerified,
+                  role: "student",
+                  twoFactorEnabled: false,
                 },
                 { merge: true }
               );
@@ -58,7 +63,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             }
 
             const next = userFromFirestoreSnapshot(firebaseUser.uid, snap, firebaseUser.photoURL);
-            if (next) setUser(next);
+            if (next) {
+              // Update emailVerified from Firebase Auth
+              next.emailVerified = firebaseUser.emailVerified;
+              setUser(next);
+            }
             setIsLoading(false);
           } catch (e) {
             console.error("Firestore user profile sync error:", e);
@@ -76,6 +85,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             paidCourses: [],
             progress: {},
             createdAt: new Date(),
+            emailVerified: firebaseUser.emailVerified,
+            role: "student",
+            twoFactorEnabled: false,
           });
           setIsLoading(false);
         }
@@ -96,6 +108,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const userCredential = await signupEmail(email, password);
     if (userCredential.user) {
       await updateProfile(userCredential.user, { displayName: name });
+      // Send verification email
+      await sendVerificationEmail(userCredential.user);
     }
   };
 
@@ -107,8 +121,32 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     await firebaseLogout();
   };
 
+  const sendEmailVerificationToUser = async (email: string) => {
+    // This is a utility for resending verification emails
+    // In a real app, you'd have a Cloud Function that sends this
+    console.log("Verification email will be sent to:", email);
+  };
+
+  const resendVerificationEmail = async () => {
+    if (!auth.currentUser) {
+      throw new Error("No user logged in");
+    }
+    await sendVerificationEmail(auth.currentUser);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, signup, loginWithGoogle, logout }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isLoading,
+        login,
+        signup,
+        loginWithGoogle,
+        logout,
+        sendEmailVerification: sendEmailVerificationToUser,
+        resendVerificationEmail,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

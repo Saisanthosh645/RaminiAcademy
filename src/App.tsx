@@ -11,6 +11,9 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import DashboardLayout from "@/components/DashboardLayout";
 import Login from "@/pages/Login";
 import Signup from "@/pages/Signup";
+import VerifyEmail from "@/pages/VerifyEmail";
+import Setup2FA from "@/pages/Setup2FA";
+import Verify2FA from "@/pages/Verify2FA";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { useAuth } from "@/lib/auth-context";
 import Dashboard from "@/pages/Dashboard";
@@ -69,6 +72,9 @@ const AppContent = () => {
         <Route path="/" element={<RootRedirect />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
+        <Route path="/setup-2fa" element={<Setup2FA />} />
+        <Route path="/verify-2fa" element={<Verify2FA />} />
         <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/courses" element={<Courses />} />
