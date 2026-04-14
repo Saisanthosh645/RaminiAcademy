@@ -8,15 +8,24 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { migrateCoursesToFirebase, updateCourseInFirebase, getAllCoursesFromFirebase, bulkUpdateZoomLinks } from "@/firebase/migration";
-import type { Course } from "@/types/firebase";
-import { Loader2, Save, RefreshCw, Link, Calendar, Users, BookOpen, Plus, Edit2, Trash2, TrendingUp } from "lucide-react";
+import {
+  migrateCoursesToFirebase,
+  updateCourseInFirebase,
+  getAllCoursesFromFirebase,
+  bulkUpdateZoomLinks,
+  createCourseInFirebase,
+  deleteCourseFromFirebase,
+  getAllUsersFromFirebase,
+  updateUserInFirebase,
+  createUserProfileInFirebase,
+} from "@/firebase/migration";
+import type { Course, User, CourseProgress } from "@/types/firebase";
+import { Loader2, Save, RefreshCw, Link, Calendar, Users, BookOpen, Plus, Edit2, Trash2, UserPlus, CheckCircle2 } from "lucide-react";
 import CourseEditor from "@/components/CourseEditor";
 
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -25,10 +34,27 @@ const Admin = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [courses, setCourses] = useState<Course[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [bulkZoomLinks, setBulkZoomLinks] = useState<Record<string, string>>({});
   const [activeTab, setActiveTab] = useState("dashboard");
+  const [newCourse, setNewCourse] = useState({
+    id: "",
+    title: "",
+    description: "",
+    instructor: "",
+    thumbnail: "",
+    duration: "6 Weeks",
+    level: "Beginner" as "Beginner" | "Intermediate",
+    category: "General",
+    price: 0,
+    totalClasses: 12,
+    capacity: 100,
+  });
+  const [newUser, setNewUser] = useState({ uid: "", name: "", email: "" });
+  const [userCourseSelection, setUserCourseSelection] = useState<Record<string, string>>({});
+  const [manualProgressByUser, setManualProgressByUser] = useState<Record<string, number>>({});
   
   // Edit state
   const [editingSchedule, setEditingSchedule] = useState<any>(null);
@@ -46,6 +72,7 @@ const Admin = () => {
   useEffect(() => {
     if (isAdmin) {
       loadCourses();
+      loadUsers();
     }
   }, [isAdmin]);
 
@@ -60,6 +87,18 @@ const Admin = () => {
     }
     setLoading(false);
   };
+
+  const loadUsers = async () => {
+    const firebaseUsers = await getAllUsersFromFirebase();
+    setUsers(firebaseUsers);
+  };
+
+  const normalizeCourseId = (value: string) =>
+    value
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, "")
+      .replace(/\s+/g, "-");
 
   const handleMigrateToFirebase = async () => {
     setLoading(true);
@@ -115,6 +154,201 @@ const Admin = () => {
       });
     }
     setLoading(false);
+  };
+
+  const handleCreateCourse = async () => {
+    if (!newCourse.title.trim()) {
+      toast({
+        title: "Missing title",
+        description: "Please enter a course title.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const id = normalizeCourseId(newCourse.id || newCourse.title);
+    if (!id) {
+      toast({
+        title: "Invalid course ID",
+        description: "Enter a valid title or ID.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const payload: Course = {
+      id,
+      title: newCourse.title,
+      description: newCourse.description || "Course description",
+      instructor: newCourse.instructor || "Instructor",
+      thumbnail: newCourse.thumbnail || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1200&auto=format&fit=crop",
+      duration: newCourse.duration,
+      level: newCourse.level,
+      progress: 0,
+      schedule: [],
+      notes: [],
+      announcements: [],
+      totalClasses: Math.max(1, Number(newCourse.totalClasses) || 1),
+      completedClasses: 0,
+      category: newCourse.category || "General",
+      price: Math.max(0, Number(newCourse.price) || 0),
+      capacity: Math.max(1, Number(newCourse.capacity) || 1),
+      enrolledCount: 0,
+      isPaid: true,
+    };
+
+    setLoading(true);
+    const result = await createCourseInFirebase(payload);
+    if (result.success) {
+      toast({
+        title: "Course created",
+        description: "New course is live in Firebase.",
+      });
+      setNewCourse({
+        id: "",
+        title: "",
+        description: "",
+        instructor: "",
+        thumbnail: "",
+        duration: "6 Weeks",
+        level: "Beginner",
+        category: "General",
+        price: 0,
+        totalClasses: 12,
+        capacity: 100,
+      });
+      await loadCourses();
+    } else {
+      toast({
+        title: "Create failed",
+        description: result.message,
+        variant: "destructive",
+      });
+    }
+    setLoading(false);
+  };
+
+  const handleDeleteCourse = async (courseId: string) => {
+    setLoading(true);
+    const result = await deleteCourseFromFirebase(courseId);
+    if (result.success) {
+      toast({ title: "Course deleted", description: "Course removed from Firebase." });
+      if (selectedCourse?.id === courseId) setSelectedCourse(null);
+      await loadCourses();
+    } else {
+      toast({ title: "Delete failed", description: result.message, variant: "destructive" });
+    }
+    setLoading(false);
+  };
+
+  const handleCreateUser = async () => {
+    if (!newUser.uid.trim() || !newUser.email.trim()) {
+      toast({
+        title: "Missing fields",
+        description: "UID and email are required.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+    const result = await createUserProfileInFirebase({
+      uid: newUser.uid.trim(),
+      name: newUser.name.trim() || "Student",
+      email: newUser.email.trim(),
+      role: "student",
+    });
+
+    if (result.success) {
+      toast({ title: "User profile created", description: "User saved in Firebase users collection." });
+      setNewUser({ uid: "", name: "", email: "" });
+      await loadUsers();
+    } else {
+      toast({ title: "Create failed", description: result.message, variant: "destructive" });
+    }
+    setLoading(false);
+  };
+
+  const buildProgress = (existing: CourseProgress | undefined, totalClasses: number, percentage: number): CourseProgress => {
+    const safePercent = Math.max(0, Math.min(100, Math.round(percentage)));
+    const completedClasses = Math.round((safePercent / 100) * totalClasses);
+    const completed = safePercent >= 100;
+    const prevQuiz = existing?.quizScore ?? 0;
+    const quizScore = completed ? Math.max(60, prevQuiz) : prevQuiz;
+
+    return {
+      completedClasses,
+      totalClasses,
+      quizScore,
+      completed,
+      certificateDate: completed ? existing?.certificateDate || new Date().toISOString() : existing?.certificateDate,
+      isPaid: true,
+      completedLessons: completed ? [] : existing?.completedLessons || [],
+    };
+  };
+
+  const handleAssignCourseOnly = async (targetUser: User) => {
+    const selectedCourseId = userCourseSelection[targetUser.uid];
+    if (!selectedCourseId) {
+      toast({ title: "Select a course", description: "Pick a course before assigning.", variant: "destructive" });
+      return;
+    }
+
+    const course = courses.find((c) => c.id === selectedCourseId);
+    if (!course) {
+      toast({ title: "Course not found", description: "Selected course no longer exists.", variant: "destructive" });
+      return;
+    }
+
+    const enrolledCourses = Array.from(new Set([...(targetUser.enrolledCourses || []), selectedCourseId]));
+    const paidCourses = Array.from(new Set([...(targetUser.paidCourses || []), selectedCourseId]));
+
+    const result = await updateUserInFirebase(targetUser.uid, {
+      enrolledCourses,
+      paidCourses,
+    });
+
+    if (result.success) {
+      toast({
+        title: "Course assigned",
+        description: `${targetUser.name} has been assigned ${course.title}.`,
+      });
+      await loadUsers();
+    } else {
+      toast({ title: "Assign failed", description: result.message, variant: "destructive" });
+    }
+  };
+
+  const handleUpdateCourseProgress = async (targetUser: User, forceHundred = false) => {
+    const selectedCourseId = userCourseSelection[targetUser.uid];
+    if (!selectedCourseId) {
+      toast({ title: "Select a course", description: "Pick a course before updating progress.", variant: "destructive" });
+      return;
+    }
+
+    const course = courses.find((c) => c.id === selectedCourseId);
+    if (!course) {
+      toast({ title: "Course not found", description: "Selected course no longer exists.", variant: "destructive" });
+      return;
+    }
+
+    const percentage = forceHundred ? 100 : Math.max(0, Math.min(100, Number(manualProgressByUser[targetUser.uid] ?? 0)));
+    const existingProgress = targetUser.progress?.[selectedCourseId];
+    const nextProgress = buildProgress(existingProgress, Math.max(1, course.totalClasses || 1), percentage);
+
+    const result = await updateUserInFirebase(targetUser.uid, {
+      [`progress.${selectedCourseId}`]: nextProgress,
+    });
+
+    if (result.success) {
+      toast({
+        title: forceHundred ? "User marked complete" : "User progress updated",
+        description: `${targetUser.name} now has ${percentage}% in ${course.title}.`,
+      });
+      await loadUsers();
+    } else {
+      toast({ title: "Update failed", description: result.message, variant: "destructive" });
+    }
   };
 
   // Edit handlers
@@ -211,7 +445,15 @@ const Admin = () => {
             <p className="text-muted-foreground mt-1">Manage courses, users, enrollments, and platform settings</p>
           </div>
           <div className="flex gap-2">
-            <Button onClick={loadCourses} variant="outline" disabled={loading}>
+            <Button
+              onClick={async () => {
+                setLoading(true);
+                await Promise.all([loadCourses(), loadUsers()]);
+                setLoading(false);
+              }}
+              variant="outline"
+              disabled={loading}
+            >
               <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
               Refresh
             </Button>
@@ -313,11 +555,70 @@ const Admin = () => {
           <TabsContent value="courses" className="space-y-6">
             <div className="flex justify-between items-center">
               <h2 className="text-xl font-bold">Manage Courses</h2>
-              <Button className="gradient-bg gap-2">
+              <Button className="gradient-bg gap-2" onClick={handleCreateCourse} disabled={loading}>
                 <Plus className="w-4 h-4" />
                 Add New Course
               </Button>
             </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Create Course</CardTitle>
+              </CardHeader>
+              <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                <Input
+                  placeholder="Course title"
+                  value={newCourse.title}
+                  onChange={(e) => setNewCourse((prev) => ({ ...prev, title: e.target.value }))}
+                />
+                <Input
+                  placeholder="Course ID (optional)"
+                  value={newCourse.id}
+                  onChange={(e) => setNewCourse((prev) => ({ ...prev, id: e.target.value }))}
+                />
+                <Input
+                  placeholder="Instructor"
+                  value={newCourse.instructor}
+                  onChange={(e) => setNewCourse((prev) => ({ ...prev, instructor: e.target.value }))}
+                />
+                <Input
+                  placeholder="Category"
+                  value={newCourse.category}
+                  onChange={(e) => setNewCourse((prev) => ({ ...prev, category: e.target.value }))}
+                />
+                <Input
+                  type="number"
+                  placeholder="Price"
+                  value={newCourse.price}
+                  onChange={(e) => setNewCourse((prev) => ({ ...prev, price: Number(e.target.value) || 0 }))}
+                />
+                <Input
+                  type="number"
+                  placeholder="Total classes"
+                  value={newCourse.totalClasses}
+                  onChange={(e) => setNewCourse((prev) => ({ ...prev, totalClasses: Number(e.target.value) || 1 }))}
+                />
+                <Input
+                  type="number"
+                  placeholder="Capacity"
+                  value={newCourse.capacity}
+                  onChange={(e) => setNewCourse((prev) => ({ ...prev, capacity: Number(e.target.value) || 1 }))}
+                />
+                <Input
+                  placeholder="Thumbnail URL"
+                  value={newCourse.thumbnail}
+                  onChange={(e) => setNewCourse((prev) => ({ ...prev, thumbnail: e.target.value }))}
+                />
+                <div className="md:col-span-2 lg:col-span-4">
+                  <Textarea
+                    placeholder="Course description"
+                    value={newCourse.description}
+                    onChange={(e) => setNewCourse((prev) => ({ ...prev, description: e.target.value }))}
+                    rows={2}
+                  />
+                </div>
+              </CardContent>
+            </Card>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {courses.map((course) => (
@@ -353,7 +654,13 @@ const Admin = () => {
                         <Edit2 className="w-3 h-3 mr-1" />
                         Edit
                       </Button>
-                      <Button size="sm" variant="destructive" className="flex-1">
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        className="flex-1"
+                        onClick={() => handleDeleteCourse(course.id)}
+                        disabled={loading}
+                      >
                         <Trash2 className="w-3 h-3 mr-1" />
                         Delete
                       </Button>
@@ -589,9 +896,131 @@ const Admin = () => {
                 <CardTitle>User Management</CardTitle>
                 <p className="text-sm text-muted-foreground mt-2">Manage student accounts, roles, and permissions</p>
               </CardHeader>
-              <CardContent className="text-center py-8">
-                <p className="text-muted-foreground mb-4">User management features coming soon</p>
-                <p className="text-xs text-muted-foreground">Features will include: student profiles, role management, enrollment tracking, and user activity logs</p>
+              <CardContent className="space-y-6">
+                <Card className="bg-muted/20">
+                  <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <UserPlus className="w-4 h-4" />
+                      Create User Profile (users collection)
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                    <Input
+                      placeholder="UID"
+                      value={newUser.uid}
+                      onChange={(e) => setNewUser((prev) => ({ ...prev, uid: e.target.value }))}
+                    />
+                    <Input
+                      placeholder="Name"
+                      value={newUser.name}
+                      onChange={(e) => setNewUser((prev) => ({ ...prev, name: e.target.value }))}
+                    />
+                    <Input
+                      placeholder="Email"
+                      value={newUser.email}
+                      onChange={(e) => setNewUser((prev) => ({ ...prev, email: e.target.value }))}
+                    />
+                    <Button onClick={handleCreateUser} disabled={loading} className="gradient-bg">
+                      Create User
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <p className="font-semibold">All Users ({users.length})</p>
+                    <Button variant="outline" size="sm" onClick={loadUsers} disabled={loading}>
+                      Reload Users
+                    </Button>
+                  </div>
+
+                  {users.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No users found or permission denied to read users collection.</p>
+                  ) : (
+                    users.map((u) => {
+                      const selectedCourseId = userCourseSelection[u.uid] || "";
+                      const selectedCourseObj = courses.find((c) => c.id === selectedCourseId);
+                      const currentProgress = selectedCourseId ? u.progress?.[selectedCourseId] : undefined;
+
+                      return (
+                        <Card key={u.uid} className="border-muted">
+                          <CardContent className="pt-6 space-y-4">
+                            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                              <div>
+                                <p className="font-semibold">{u.name || "Student"}</p>
+                                <p className="text-xs text-muted-foreground">{u.email} • {u.uid}</p>
+                              </div>
+                              <div className="flex gap-2 text-xs">
+                                <Badge variant="outline">{u.role || "student"}</Badge>
+                                <Badge variant="secondary">Paid: {u.paidCourses?.length || 0}</Badge>
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 lg:grid-cols-5 gap-3">
+                              <select
+                                value={selectedCourseId}
+                                onChange={(e) => setUserCourseSelection((prev) => ({ ...prev, [u.uid]: e.target.value }))}
+                                className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+                              >
+                                <option value="">Select course</option>
+                                {courses.map((c) => (
+                                  <option key={c.id} value={c.id}>
+                                    {c.title}
+                                  </option>
+                                ))}
+                              </select>
+
+                              <Input
+                                type="number"
+                                min={0}
+                                max={100}
+                                placeholder="Manual %"
+                                value={manualProgressByUser[u.uid] ?? ""}
+                                onChange={(e) =>
+                                  setManualProgressByUser((prev) => ({
+                                    ...prev,
+                                    [u.uid]: Number(e.target.value),
+                                  }))
+                                }
+                              />
+
+                              <Button
+                                variant="outline"
+                                onClick={() => handleAssignCourseOnly(u)}
+                                disabled={loading || !selectedCourseId}
+                              >
+                                Assign Course
+                              </Button>
+
+                              <Button
+                                variant="outline"
+                                onClick={() => handleUpdateCourseProgress(u, false)}
+                                disabled={loading || !selectedCourseId}
+                              >
+                                Save Progress
+                              </Button>
+
+                              <Button
+                                className="gradient-bg"
+                                onClick={() => handleUpdateCourseProgress(u, true)}
+                                disabled={loading || !selectedCourseId}
+                              >
+                                <CheckCircle2 className="w-4 h-4 mr-2" />
+                                Force 100%
+                              </Button>
+                            </div>
+
+                            {selectedCourseObj && (
+                              <p className="text-xs text-muted-foreground">
+                                Current in {selectedCourseObj.title}: {currentProgress?.completedClasses || 0}/{selectedCourseObj.totalClasses} classes, quiz {currentProgress?.quizScore || 0}%, completed {currentProgress?.completed ? "yes" : "no"}
+                              </p>
+                            )}
+                          </CardContent>
+                        </Card>
+                      );
+                    })
+                  )}
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
