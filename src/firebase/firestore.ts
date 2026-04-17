@@ -8,6 +8,7 @@ export const db = getFirestore(app);
 
 /** User profile document: `users/{uid}` */
 export const usersRef = (uid: string) => doc(db, COLLECTIONS.users, uid);
+export const usersCollection = collection(db, COLLECTIONS.users);
 
 /** All course catalog documents */
 export const coursesCollection = collection(db, COLLECTIONS.courses);
@@ -42,6 +43,9 @@ export function userFromFirestoreSnapshot(
     progress: data.progress && typeof data.progress === "object" ? (data.progress as Record<string, CourseProgress>) : {},
     createdAt,
     photoURL: photoURL ?? null,
+    role: data.role === "admin" || data.role === "teacher" || data.role === "student" ? data.role : "student",
+    twoFactorEnabled: Boolean(data.twoFactorEnabled),
+    emailVerified: typeof data.emailVerified === "boolean" ? data.emailVerified : undefined,
   };
 }
 

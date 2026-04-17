@@ -8,7 +8,7 @@ export const useUserCourses = () => {
   const { user } = useAuth();
 
   return useQuery({
-    queryKey: ['userCourses', user?.uid],
+    queryKey: ['userCourses', user?.uid, user?.enrolledCourses, user?.progress],
     queryFn: async () => {
       if (!user?.enrolledCourses?.length) return [];
       
@@ -34,7 +34,7 @@ export const useUserCourses = () => {
       const courses = await Promise.all(coursePromises);
       return courses.filter(Boolean) as Course[];
     },
-    enabled: !!user && user.enrolledCourses.length > 0,
+    enabled: !!user,
   });
 };
 

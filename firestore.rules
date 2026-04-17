@@ -4,18 +4,26 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email in [
+          "raminisaisanthosh@gmail.com",
+          "srijithakattekola2028@gmail.com"
+        ];
+    }
+
     // User profile — one document per auth user
     match /users/{userId} {
-      allow read: if request.auth != null && request.auth.uid == userId;
+      allow read: if isAdmin() || (request.auth != null && request.auth.uid == userId);
       allow create: if request.auth != null && request.auth.uid == userId;
-      allow update: if request.auth != null && request.auth.uid == userId;
-      allow delete: if false;
+      allow update: if isAdmin() || (request.auth != null && request.auth.uid == userId);
+      allow delete: if isAdmin();
     }
 
     // Course catalog — readable by signed-in learners; writes only via Admin / Console
     match /courses/{courseId} {
       allow read: if request.auth != null;
-      allow write: if false;
+      allow write: if isAdmin();
     }
 
     // Certificates — public read for verification, write only via Admin (Functions)

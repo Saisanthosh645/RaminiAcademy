@@ -27,7 +27,7 @@ console.log(exampleSchedule);
     id: "python-zero-hero-0-Saturday",
     courseName: "Python 0 to Hero",
     courseId: "python-zero-hero",
-    date: Date(2026-04-16T00:00:00),
+    date: Date(2026-04-18T00:00:00),
     day: "Saturday",
     startTime: "19:00",
     endTime: "20:15",
@@ -51,7 +51,7 @@ todaysSessions.forEach((session) => {
   );
 });
 
-/* Output Example (if today is April 16, 2026):
+/* Output Example (if today is April 18, 2026):
 📍 TODAY'S SESSIONS:
 Found 3 sessions today
 - Python 0 to Hero at 19:00 (Status: upcoming)
@@ -93,12 +93,12 @@ upcomingSessions.forEach((session) => {
 
 /* Output Example:
 ⏭️  UPCOMING SESSIONS:
-Saturday, Apr 16 | Python 0 to Hero at 19:00
-Saturday, Apr 16 | HTML, CSS, JavaScript at 20:15
-Saturday, Apr 16 | AI Tools Mastery at 21:15
-Sunday, Apr 17 | Data Structures & Algorithms at 17:00
-Sunday, Apr 17 | MS Excel at 18:15
-Sunday, Apr 17 | MS PowerPoint at 19:15
+Saturday, Apr 18 | Python 0 to Hero at 19:00
+Saturday, Apr 18 | HTML, CSS, JavaScript at 20:15
+Saturday, Apr 18 | AI Tools Mastery at 21:15
+Sunday, Apr 19 | Data Structures & Algorithms at 17:00
+Sunday, Apr 19 | MS Excel at 18:15
+Sunday, Apr 19 | MS PowerPoint at 19:15
 ...
 */
 
@@ -199,7 +199,7 @@ EVERY SUNDAY:
   6:15 PM - 7:15 PM → MS Excel
   7:15 PM - 8:15 PM → MS PowerPoint
 
-Starting: April 16, 2026 (Saturday)
+Starting: April 18, 2026 (Saturday)
 Duration: 12 weeks
 Total Sessions: 72
 `);

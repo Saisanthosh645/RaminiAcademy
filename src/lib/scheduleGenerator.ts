@@ -1,4 +1,4 @@
-// Schedule Generator - Creates dynamic weekly schedule from April 16, 2026
+// Schedule Generator - Creates dynamic weekly schedule from the first Saturday in the series
 
 export interface ScheduleSession {
   id: string;
@@ -14,14 +14,14 @@ export interface ScheduleSession {
 
 const COURSE_SCHEDULE = [
   // Saturday Schedule
-  { courseId: "python-zero-hero", courseName: "Python 0 to Hero", day: "Saturday" as const, startTime: "19:00", endTime: "20:15" },
+  { courseId: "powerpoint", courseName: "MS PowerPoint", day: "Saturday" as const, startTime: "19:00", endTime: "20:15" },
   { courseId: "web-dev-basics", courseName: "HTML, CSS, JavaScript", day: "Saturday" as const, startTime: "20:15", endTime: "21:15" },
   { courseId: "ai-tools", courseName: "AI Tools Mastery", day: "Saturday" as const, startTime: "21:15", endTime: "22:00" },
   
   // Sunday Schedule
   { courseId: "dsa-python", courseName: "Data Structures & Algorithms", day: "Sunday" as const, startTime: "17:00", endTime: "18:15" },
   { courseId: "excel", courseName: "MS Excel", day: "Sunday" as const, startTime: "18:15", endTime: "19:15" },
-  { courseId: "powerpoint", courseName: "MS PowerPoint", day: "Sunday" as const, startTime: "19:15", endTime: "20:15" },
+  { courseId: "python-zero-hero", courseName: "Python 0 to Hero", day: "Sunday" as const, startTime: "19:15", endTime: "20:15" },
 ];
 
 // Generate dummy Zoom links
@@ -69,7 +69,7 @@ const getSessionStatus = (sessionDate: Date, startTime: string, endTime: string)
   }
 };
 
-// Generate schedule starting from April 16, 2026 (Saturday) for multiple weeks
+// Generate schedule starting from April 18, 2026 (Saturday) for multiple weeks
 import { Course } from '@/types/firebase';
 
 export const generateWeeklySchedule = (weeksCount: number = 12): ScheduleSession[] => {
@@ -78,7 +78,7 @@ export const generateWeeklySchedule = (weeksCount: number = 12): ScheduleSession
 
 export const generateUserSchedule = (userCourses: Course[], weeksCount: number = 12): ScheduleSession[] => {
   const sessions: ScheduleSession[] = [];
-  const startDate = new Date(2026, 3, 16); // April 16, 2026 (Saturday)
+  const startDate = new Date(2026, 3, 18); // April 18, 2026 (Saturday)
   
   // Filter COURSE_SCHEDULE to only user's courses
   const userCourseIds = userCourses.map(c => c.id);

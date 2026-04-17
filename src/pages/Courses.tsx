@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth-context";
-import { useCourse } from "@/hooks/useCourse";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -27,7 +26,9 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { Course } from "@/types/firebase";
-import QRCode from "qrcode.react";
+import { onSnapshot } from "firebase/firestore";
+import { coursesCollection } from "@/firebase/firestore";
+import { useCourse } from "@/hooks/useCourse";
 
 const Courses = () => {
   const navigate = useNavigate();
@@ -37,20 +38,28 @@ const Courses = () => {
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [paidCourses, setPaidCourses] = useState<string[]>(user?.paidCourses || []);
   const [isEnrolling, setIsEnrolling] = useState(false);
+  const { data: selectedCourseFromDashboard } = useCourse({ courseId: selectedCourse?.id || "" });
+  const selectedCourseData = selectedCourseFromDashboard ?? selectedCourse;
 
   useEffect(() => {
-    // Fetch all courses from Firebase
-    const fetchCourses = async () => {
-      try {
-        const courses = await import("@/firebase/seedCourses").then(
-          (m) => m.courses || []
-        );
-        setAllCourses(courses);
-      } catch (error) {
-        console.error("Error fetching courses:", error);
+    const unsub = onSnapshot(
+      coursesCollection,
+      (snapshot) => {
+        const firebaseCourses = snapshot.docs.map((docSnap) => ({
+          id: docSnap.id,
+          ...(docSnap.data() as Omit<Course, "id">),
+        }));
+        setAllCourses(firebaseCourses);
+      },
+      (error) => {
+        console.error("Error subscribing to courses:", error);
       }
-    };
-    fetchCourses();
+    );
+
+    return () => unsub();
+  }, []);
+
+  useEffect(() => {
     setPaidCourses(user?.paidCourses || []);
   }, [user]);
 
@@ -244,20 +253,20 @@ const Courses = () => {
         }}
       >
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          {selectedCourse && (
+          {selectedCourseData && (
             <AnimatePresence mode="wait">
               {isEnrolling ? (
                 <motion.div key="payment" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ duration: 0.2 }} className="space-y-6 flex flex-col items-center py-4">
                   <div className="text-center space-y-2">
                     <h2 className="text-2xl font-bold font-display gradient-text">Secure UPI Payment</h2>
-                    <p className="text-muted-foreground">{selectedCourse.title}</p>
+                    <p className="text-muted-foreground">{selectedCourseData.title}</p>
                     <div className="flex items-center justify-center gap-3 mt-4 mb-2">
                       <div className="bg-indigo-600 text-white px-5 py-2 rounded-lg font-bold flex items-center gap-1.5 shadow-xl text-2xl">
                         <span>₹</span>
-                        <span>{selectedCourse.price}</span>
+                        <span>{selectedCourseData.price}</span>
                       </div>
-                      {selectedCourse.originalPrice && (
-                        <div className="text-base text-muted-foreground line-through opacity-30">₹{selectedCourse.originalPrice}</div>
+                      {selectedCourseData.originalPrice && (
+                        <div className="text-base text-muted-foreground line-through opacity-30">₹{selectedCourseData.originalPrice}</div>
                       )}
                     </div>
                   </div>
@@ -290,7 +299,7 @@ const Courses = () => {
                       Back to Details
                     </Button>
                     <a
-                      href={`https://wa.me/919063019758?text=${encodeURIComponent(`Hi, I have just paid for the course "${selectedCourse.title}".\n\nMy Details:\n- Name: ${user?.name || ""}\n- Email: ${user?.email || ""}\n- Amount Paid: ₹${selectedCourse.price}\n\n[Please find the payment receipt attached below.]`)}`}
+                      href={`https://wa.me/919063019758?text=${encodeURIComponent(`Hi, I have just paid for the course "${selectedCourseData.title}".\n\nMy Details:\n- Name: ${user?.name || ""}\n- Email: ${user?.email || ""}\n- Amount Paid: ₹${selectedCourseData.price}\n\n[Please find the payment receipt attached below.]`)}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex-[2] bg-[#25D366] hover:bg-[#20bd5a] text-white py-6 rounded-md font-bold flex items-center justify-center shadow-lg transition-transform hover:scale-[1.02] active:scale-[0.98]"
@@ -304,8 +313,8 @@ const Courses = () => {
               {/* Header */}
               <div className="space-y-2">
                 <DialogHeader>
-                  <DialogTitle className="text-2xl gradient-text">{selectedCourse.title}</DialogTitle>
-                  <DialogDescription className="text-base">{selectedCourse.description}</DialogDescription>
+                  <DialogTitle className="text-2xl gradient-text">{selectedCourseData.title}</DialogTitle>
+                  <DialogDescription className="text-base">{selectedCourseData.description}</DialogDescription>
                 </DialogHeader>
               </div>
 
@@ -321,29 +330,29 @@ const Courses = () => {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1 p-4 bg-primary/5 rounded-lg">
                       <p className="text-xs text-muted-foreground">Instructor</p>
-                      <p className="font-semibold text-card-foreground">{selectedCourse.instructor}</p>
+                      <p className="font-semibold text-card-foreground">{selectedCourseData.instructor}</p>
                     </div>
                     <div className="space-y-1 p-4 bg-accent/5 rounded-lg">
                       <p className="text-xs text-muted-foreground">Level</p>
-                      <p className="font-semibold text-card-foreground">{selectedCourse.level}</p>
+                      <p className="font-semibold text-card-foreground">{selectedCourseData.level}</p>
                     </div>
                     <div className="space-y-1 p-4 bg-primary/5 rounded-lg">
                       <p className="text-xs text-muted-foreground">Duration</p>
-                      <p className="font-semibold text-card-foreground">{selectedCourse.duration}</p>
+                      <p className="font-semibold text-card-foreground">{selectedCourseData.duration}</p>
                     </div>
                     <div className="space-y-1 p-4 bg-accent/5 rounded-lg">
                       <p className="text-xs text-muted-foreground">Classes</p>
-                      <p className="font-semibold text-card-foreground">{selectedCourse.totalClasses} Sessions</p>
+                      <p className="font-semibold text-card-foreground">{selectedCourseData.totalClasses} Sessions</p>
                     </div>
                   </div>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{selectedCourse.description}</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{selectedCourseData.description}</p>
                 </TabsContent>
 
                 {/* Syllabus Tab */}
                 <TabsContent value="syllabus" className="space-y-3">
-                  {selectedCourse.syllabus && selectedCourse.syllabus.length > 0 ? (
+                  {selectedCourseData.syllabus && selectedCourseData.syllabus.length > 0 ? (
                     <div className="space-y-2">
-                      {selectedCourse.syllabus.map((item, i) => (
+                      {selectedCourseData.syllabus.map((item, i) => (
                         <motion.div
                           key={i}
                           initial={{ opacity: 0, x: -10 }}
@@ -375,7 +384,7 @@ const Courses = () => {
                       <BookOpen className="w-5 h-5 text-primary" />
                       <div>
                         <p className="text-xs text-muted-foreground">Total Content</p>
-                        <p className="font-semibold text-card-foreground">{selectedCourse.totalClasses} Classes + Recordings + Resources</p>
+                        <p className="font-semibold text-card-foreground">{selectedCourseData.totalClasses} Classes + Recordings + Resources</p>
                       </div>
                     </div>
                     <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border/50">
@@ -406,11 +415,11 @@ const Courses = () => {
                     <div className="flex items-center gap-2.5">
                       <div className="bg-indigo-600 text-white px-3.5 py-1.5 rounded-md font-bold flex items-center gap-1.5 shadow-lg text-lg">
                         <span>₹</span>
-                        <span>{selectedCourse.price}</span>
+                        <span>{selectedCourseData.price}</span>
                       </div>
-                      {selectedCourse.originalPrice && (
+                      {selectedCourseData.originalPrice && (
                         <span className="text-sm text-muted-foreground line-through opacity-50">
-                          ₹{selectedCourse.originalPrice}
+                          ₹{selectedCourseData.originalPrice}
                         </span>
                       )}
                       <span className="text-[10px] uppercase tracking-tighter font-semibold text-muted-foreground ml-auto opacity-40">one-time payment</span>
@@ -418,10 +427,10 @@ const Courses = () => {
                   </div>
                 </div>
 
-                {isPurchased(selectedCourse.id) ? (
+                {isPurchased(selectedCourseData.id) ? (
                   <Button
                     onClick={() => {
-                      navigate(`/courses/${selectedCourse.id}`);
+                      navigate(`/courses/${selectedCourseData.id}`);
                       setSelectedCourse(null);
                     }}
                     className="w-full gradient-bg text-primary-foreground h-12 text-base"
