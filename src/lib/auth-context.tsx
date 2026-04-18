@@ -25,7 +25,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     let firestoreUnsub: (() => void) | undefined;
 
-    const authUnsub = onAuthChanged((firebaseUser) => {
+    const authUnsub = onAuthChanged(async (firebaseUser) => {
       firestoreUnsub?.();
       firestoreUnsub = undefined;
 
@@ -33,6 +33,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(null);
         setIsLoading(false);
         return;
+      }
+
+      try {
+        await firebaseUser.getIdToken();
+      } catch (tokenError) {
+        console.error("Firebase auth token refresh error:", tokenError);
       }
 
       setIsLoading(true);

@@ -32,7 +32,7 @@ import { useCourse } from "@/hooks/useCourse";
 
 const Courses = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
   const { toast } = useToast();
   const [allCourses, setAllCourses] = useState<Course[]>([]);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
@@ -42,6 +42,10 @@ const Courses = () => {
   const selectedCourseData = selectedCourseFromDashboard ?? selectedCourse;
 
   useEffect(() => {
+    if (isLoading || !user) {
+      return;
+    }
+
     const unsub = onSnapshot(
       coursesCollection,
       (snapshot) => {
@@ -57,7 +61,7 @@ const Courses = () => {
     );
 
     return () => unsub();
-  }, []);
+  }, [isLoading, user?.uid]);
 
   useEffect(() => {
     setPaidCourses(user?.paidCourses || []);

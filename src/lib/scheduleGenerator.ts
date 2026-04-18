@@ -24,17 +24,21 @@ const COURSE_SCHEDULE = [
   { courseId: "python-zero-hero", courseName: "Python 0 to Hero", day: "Sunday" as const, startTime: "19:15", endTime: "20:15" },
 ];
 
-// Generate dummy Zoom links
+// Generate dummy Zoho Webinar links
 const generateZoomLink = (courseId: string, index: number): string => {
+  if (courseId === "python-zero-hero") {
+    return "https://live.zoho.in/ktas-ldl-rtg";
+  }
+
   const zoomIds: Record<string, string> = {
-    "python-zero-hero": "1234567890",
+    "python-zero-hero": "ktas-ldl-rtg",
     "web-dev-basics": "2345678901",
     "dsa-python": "3456789012",
     "ai-tools": "4567890123",
     "powerpoint": "5678901234",
     "excel": "6789012345",
   };
-  return `https://zoom.us/j/${zoomIds[courseId] || "1234567890"}`;
+  return `https://meeting.zoho.com/${zoomIds[courseId] || "1234567890"}`;
 };
 
 // Get the day of week for a given date

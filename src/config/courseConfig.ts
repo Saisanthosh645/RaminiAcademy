@@ -1,13 +1,13 @@
-// Course Configuration - Centralized place to manage Zoom links, times, and other dynamic data
+// Course Configuration - Centralized place to manage webinar links, times, and other dynamic data
 export const COURSE_CONFIG = {
-  // Zoom links for each course
+  // Zoho Webinar links for each course
   zoomLinks: {
-    "python-zero-hero": "https://zoom.us/j/1234567890",
-    "web-dev-basics": "https://zoom.us/j/2345678901",
-    "dsa-python": "https://zoom.us/j/3456789012",
-    "ai-tools": "https://zoom.us/j/4567890123",
-    "powerpoint": "https://zoom.us/j/5678901234",
-    "excel": "https://zoom.us/j/6789012345"
+    "python-zero-hero": "https://live.zoho.in/ktas-ldl-rtg",
+    "web-dev-basics": "https://meeting.zoho.com/2345678901",
+    "dsa-python": "https://meeting.zoho.com/3456789012",
+    "ai-tools": "https://meeting.zoho.com/4567890123",
+    "powerpoint": "https://meeting.zoho.com/5678901234",
+    "excel": "https://meeting.zoho.com/6789012345"
   },
 
   // Default meeting times for each course (can be overridden per session)
@@ -60,9 +60,12 @@ export const COURSE_CONFIG = {
 };
 
 // Helper functions to get configuration data
-export const getZoomLink = (courseId: string): string => {
+export const getWebinarLink = (courseId: string): string => {
   return COURSE_CONFIG.zoomLinks[courseId] || COURSE_CONFIG.zoomLinks["python-zero-hero"];
 };
+
+// Backward-compatible alias used by older imports.
+export const getZoomLink = getWebinarLink;
 
 export const getDefaultTime = (courseId: string): string => {
   return COURSE_CONFIG.defaultTimes[courseId] || "7:00 PM";

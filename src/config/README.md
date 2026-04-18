@@ -2,24 +2,24 @@
 
 This file centralizes all dynamic course data to make updates easy and avoid scattered hardcoded values.
 
-## How to Update Zoom Links
+## How to Update Zoho Webinar Links
 
 1. **Open** `src/config/courseConfig.ts`
 2. **Find** the `zoomLinks` object
-3. **Update** the Zoom link for the specific course:
+3. **Update** the Zoho Webinar link for the specific course:
 
 ```typescript
 zoomLinks: {
-  "python-zero-hero": "https://zoom.us/j/YOUR_NEW_LINK_HERE",
-  "web-dev-basics": "https://zoom.us/j/YOUR_NEW_LINK_HERE",
-  "dsa-python": "https://zoom.us/j/YOUR_NEW_LINK_HERE",
+  "python-zero-hero": "https://meeting.zoho.com/YOUR_NEW_LINK_HERE",
+  "web-dev-basics": "https://meeting.zoho.com/YOUR_NEW_LINK_HERE",
+  "dsa-python": "https://meeting.zoho.com/YOUR_NEW_LINK_HERE",
   // ... other courses
 }
 ```
 
 4. **Save** the file
 5. **Test** by running the app: `npm run dev`
-6. **Commit** and push: `git add . && git commit -m "Updated Zoom links" && git push`
+6. **Commit** and push: `git add . && git commit -m "Updated webinar links" && git push`
 
 ## How to Update Course Capacities
 

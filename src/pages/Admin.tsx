@@ -22,6 +22,9 @@ import {
 import type { Course, User, CourseProgress } from "@/types/firebase";
 import { Loader2, Save, RefreshCw, Link, Calendar, Users, BookOpen, Plus, Edit2, Trash2, UserPlus, CheckCircle2 } from "lucide-react";
 import CourseEditor from "@/components/CourseEditor";
+import { onSnapshot } from "firebase/firestore";
+import { usersCollection } from "@/firebase/firestore";
+import { auth } from "@/firebase/auth";
 
 import {
   Dialog,
@@ -31,11 +34,13 @@ import {
 } from "@/components/ui/dialog";
 
 const Admin = () => {
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
   const [courses, setCourses] = useState<Course[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
+  const [usersLoading, setUsersLoading] = useState(true);
+  const [usersError, setUsersError] = useState<string | null>(null);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [bulkZoomLinks, setBulkZoomLinks] = useState<Record<string, string>>({});
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -66,15 +71,81 @@ const Admin = () => {
   const adminEmails = [
     "raminisaisanthosh@gmail.com",
     "srijithakattekola2028@gmail.com",
+    "saisanthosh26082007@gmail.com",
   ];
-  const isAdmin = adminEmails.includes(user?.email || "") || user?.role === "admin" || user?.uid === "admin-user-id";
+  const allowAllAuthedAdmin = import.meta.env.VITE_ALLOW_ALL_AUTHENTICATED_ADMIN === "true";
+  const isAdmin = (allowAllAuthedAdmin && !!user) || adminEmails.includes(user?.email || "") || user?.role === "admin" || user?.uid === "admin-user-id";
 
   useEffect(() => {
     if (isAdmin) {
       loadCourses();
-      loadUsers();
     }
   }, [isAdmin]);
+
+  useEffect(() => {
+    if (authLoading || !isAdmin) {
+      return;
+    }
+
+    let unsubscribe: (() => void) | undefined;
+    let isMounted = true;
+
+    const startUsersSync = async () => {
+      setUsersLoading(true);
+      try {
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+          if (!isMounted) return;
+          setUsers([]);
+          setUsersError("No authenticated user session. Please log out and log in again.");
+          setUsersLoading(false);
+          return;
+        }
+
+        // Force a fresh token to avoid stale-session permission failures.
+        await currentUser.getIdToken(true);
+
+        if (!isMounted) return;
+        unsubscribe = onSnapshot(
+          usersCollection,
+          (snapshot) => {
+            const firebaseUsers: User[] = snapshot.docs.map((docSnap) => ({
+              uid: docSnap.id,
+              ...(docSnap.data() as Omit<User, "uid">),
+            }));
+
+            setUsers(firebaseUsers);
+            setUsersError(null);
+            setUsersLoading(false);
+          },
+          (error: any) => {
+            console.error("Error syncing users:", error);
+            if (!isMounted) return;
+            setUsers([]);
+            const code = typeof error?.code === "string" ? ` (${error.code})` : "";
+            const message = error instanceof Error ? error.message : "Failed to read users collection";
+            setUsersError(`${message}${code}`);
+            setUsersLoading(false);
+          }
+        );
+      } catch (error: any) {
+        console.error("Failed to initialize users sync:", error);
+        if (!isMounted) return;
+        setUsers([]);
+        const code = typeof error?.code === "string" ? ` (${error.code})` : "";
+        const message = error instanceof Error ? error.message : "Failed to initialize users sync";
+        setUsersError(`${message}${code}`);
+        setUsersLoading(false);
+      }
+    };
+
+    void startUsersSync();
+
+    return () => {
+      isMounted = false;
+      unsubscribe?.();
+    };
+  }, [authLoading, isAdmin]);
 
   const loadCourses = async () => {
     setLoading(true);
@@ -89,8 +160,15 @@ const Admin = () => {
   };
 
   const loadUsers = async () => {
-    const firebaseUsers = await getAllUsersFromFirebase();
-    setUsers(firebaseUsers);
+    try {
+      const firebaseUsers = await getAllUsersFromFirebase();
+      setUsers(firebaseUsers);
+      setUsersError(null);
+    } catch (error) {
+      console.error("Manual user reload failed:", error);
+      setUsers([]);
+      setUsersError(error instanceof Error ? error.message : "Failed to read users collection");
+    }
   };
 
   const normalizeCourseId = (value: string) =>
@@ -142,7 +220,7 @@ const Admin = () => {
     if (result.success) {
       toast({
         title: "Bulk Update Successful",
-        description: "All Zoom links have been updated",
+        description: "All Zoho Webinar links have been updated",
       });
       loadCourses();
       setBulkZoomLinks({});
@@ -675,7 +753,7 @@ const Admin = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Link className="w-5 h-5" />
-                  Bulk Update Zoom Links
+                  Bulk Update Zoho Webinar Links
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -683,7 +761,7 @@ const Admin = () => {
                   <div key={course.id} className="flex items-center gap-4">
                     <Label className="w-48 text-xs font-semibold truncate">{course.title}</Label>
                     <Input
-                      placeholder="https://zoom.us/j/..."
+                      placeholder="https://meeting.zoho.com/..."
                       value={bulkZoomLinks[course.id] || ""}
                       onChange={(e) => setBulkZoomLinks(prev => ({
                         ...prev,
@@ -699,7 +777,7 @@ const Admin = () => {
                   className="w-full"
                 >
                   {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                  Update All Zoom Links
+                  Update All Zoho Webinar Links
                 </Button>
               </CardContent>
             </Card>
@@ -763,7 +841,7 @@ const Admin = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Manage Class Schedules</CardTitle>
-                <p className="text-sm text-muted-foreground mt-2">Edit dates, times, and Zoom links for individual classes</p>
+                <p className="text-sm text-muted-foreground mt-2">Edit dates, times, and Zoho Webinar links for individual classes</p>
               </CardHeader>
               <CardContent className="space-y-4">
                 {courses.length > 0 && (
@@ -795,7 +873,7 @@ const Admin = () => {
                             <th className="px-4 py-2 text-left">Topic</th>
                             <th className="px-4 py-2 text-left">Date</th>
                             <th className="px-4 py-2 text-left">Time</th>
-                            <th className="px-4 py-2 text-left">Zoom Link</th>
+                            <th className="px-4 py-2 text-left">Zoho Webinar Link</th>
                             <th className="px-4 py-2 text-center">Actions</th>
                           </tr>
                         </thead>
@@ -934,7 +1012,18 @@ const Admin = () => {
                     </Button>
                   </div>
 
-                  {users.length === 0 ? (
+                  {usersLoading ? (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Syncing users from Firebase...
+                    </div>
+                  ) : usersError ? (
+                    <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
+                      {usersError}
+                    </div>
+                  ) : null}
+
+                  {!usersLoading && !usersError && users.length === 0 ? (
                     <p className="text-sm text-muted-foreground">No users found or permission denied to read users collection.</p>
                   ) : (
                     users.map((u) => {
@@ -1065,10 +1154,10 @@ const Admin = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="zoom" className="text-sm">Zoom Link</Label>
+                  <Label htmlFor="zoom" className="text-sm">Zoho Webinar Link</Label>
                   <Input
                     id="zoom"
-                    placeholder="https://zoom.us/j/..."
+                    placeholder="https://meeting.zoho.com/..."
                     value={editingSchedule.meetLink}
                     onChange={(e) => setEditingSchedule({ ...editingSchedule, meetLink: e.target.value })}
                     className="mt-1"

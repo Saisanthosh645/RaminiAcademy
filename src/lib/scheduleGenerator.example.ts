@@ -31,7 +31,7 @@ console.log(exampleSchedule);
     day: "Saturday",
     startTime: "19:00",
     endTime: "20:15",
-    zoomLink: "https://zoom.us/j/1234567890",
+    zoomLink: "https://live.zoho.in/ktas-ldl-rtg",
     status: "upcoming" // Changes based on current date/time
   },
   // ... more sessions
@@ -161,7 +161,7 @@ const courses = [
 
 courses.forEach((courseId) => {
   const zoomId = {
-    "python-zero-hero": "1234567890",
+    "python-zero-hero": "ktas-ldl-rtg",
     "web-dev-basics": "2345678901",
     "dsa-python": "3456789012",
     "ai-tools": "4567890123",
@@ -176,7 +176,7 @@ courses.forEach((courseId) => {
 
 /* Output:
 🔗 ZOOM LINKS:
-python-zero-hero: https://zoom.us/j/1234567890
+python-zero-hero: https://live.zoho.in/ktas-ldl-rtg
 web-dev-basics: https://zoom.us/j/2345678901
 dsa-python: https://zoom.us/j/3456789012
 ai-tools: https://zoom.us/j/4567890123

@@ -174,7 +174,7 @@ const ScheduleView = () => {
                 navigator.clipboard.writeText(session.zoomLink);
                 // toast is handled by parent or we could add here
               }}
-              title="Copy Zoom Link"
+              title="Copy Zoho Webinar Link"
             >
               <Video className="w-4 h-4 opacity-70" />
             </Button>

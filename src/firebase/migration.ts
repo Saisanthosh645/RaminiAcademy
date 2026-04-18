@@ -56,7 +56,7 @@ export async function getAllCoursesFromFirebase() {
 }
 
 /**
- * Bulk update Zoom links for all courses
+ * Bulk update Zoho Webinar links for all courses
  */
 export async function bulkUpdateZoomLinks(zoomLinks: Record<string, string>) {
   try {
@@ -70,7 +70,7 @@ export async function bulkUpdateZoomLinks(zoomLinks: Record<string, string>) {
     );
 
     await Promise.all(updates);
-    console.log("✅ Bulk Zoom link update completed!");
+    console.log("✅ Bulk Zoho Webinar link update completed!");
     return { success: true };
   } catch (error) {
     console.error("❌ Bulk update failed:", error);
@@ -120,7 +120,7 @@ export async function getAllUsersFromFirebase() {
     return users;
   } catch (error) {
     console.error("Error fetching users:", error);
-    return [];
+    throw error;
   }
 }
 

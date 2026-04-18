@@ -201,11 +201,11 @@ const CourseEditor = ({ course, onClose, onSave }: CourseEditorProps) => {
                     </div>
                   </div>
                   <div className="mt-4">
-                    <Label>Zoom Link</Label>
+                    <Label>Zoho Webinar Link</Label>
                     <Input
                       value={session.meetLink || ""}
                       onChange={(e) => updateScheduleItem(index, 'meetLink', e.target.value)}
-                      placeholder="https://zoom.us/j/..."
+                      placeholder="https://meeting.zoho.com/..."
                     />
                   </div>
                 </Card>

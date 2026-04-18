@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { useAuth } from "@/lib/auth-context";
@@ -7,6 +8,9 @@ import { BookOpen, Trophy, Clock, ArrowRight, Play, type LucideIcon } from "luci
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useNavigate } from "react-router-dom";
+import { onSnapshot } from "firebase/firestore";
+import { coursesCollection } from "@/firebase/firestore";
+import type { Course } from "@/types/firebase";
 
 const StatCard = ({ icon: Icon, label, value, color }: { icon: LucideIcon; label: string; value: string; color: string }) => (
   <motion.div
@@ -88,13 +92,46 @@ const ResumeHero = ({ course }: { course: any }) => {
 const Dashboard = () => {
   const { user } = useAuth();
   const { data: paidCourses = [], isLoading: coursesLoading } = usePaidCourses();
+  const [catalogCourses, setCatalogCourses] = useState<Course[]>([]);
+  const [catalogLoading, setCatalogLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user) {
+      setCatalogCourses([]);
+      setCatalogLoading(false);
+      return;
+    }
+
+    setCatalogLoading(true);
+    const unsub = onSnapshot(
+      coursesCollection,
+      (snapshot) => {
+        const next = snapshot.docs.map((docSnap) => ({
+          id: docSnap.id,
+          ...(docSnap.data() as Omit<Course, "id">),
+        }));
+        setCatalogCourses(next);
+        setCatalogLoading(false);
+      },
+      (error) => {
+        console.error("Error syncing dashboard courses:", error);
+        setCatalogCourses([]);
+        setCatalogLoading(false);
+      }
+    );
+
+    return () => unsub();
+  }, [user?.uid]);
+
+  const dashboardCourses = paidCourses.length > 0 ? paidCourses : catalogCourses;
+  const isDashboardLoading = coursesLoading || (paidCourses.length === 0 && catalogLoading);
   
-  const avgProgress = Math.round(paidCourses.reduce((a, c) => a + c.progress, 0) / paidCourses.length) || 0;
-  const liveCount = paidCourses.reduce((a, c) => a + c.schedule.filter((s) => s.status === "live").length, 0);
+  const avgProgress = Math.round(dashboardCourses.reduce((a, c) => a + c.progress, 0) / dashboardCourses.length) || 0;
+  const liveCount = dashboardCourses.reduce((a, c) => a + c.schedule.filter((s) => s.status === "live").length, 0);
   
-  const resumeCourse = [...paidCourses]
+  const resumeCourse = [...dashboardCourses]
     .filter(c => c.progress > 0 && c.progress < 100)
-    .sort((a, b) => b.progress - a.progress)[0] || paidCourses[0];
+    .sort((a, b) => b.progress - a.progress)[0] || dashboardCourses[0];
 
   return (
     <div className="p-6 lg:p-8 space-y-8 max-w-7xl mx-auto">
@@ -107,10 +144,10 @@ const Dashboard = () => {
         </motion.div>
       </div>
 
-      {paidCourses.length > 0 && <ResumeHero course={resumeCourse} />}
+      {dashboardCourses.length > 0 && <ResumeHero course={resumeCourse} />}
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <StatCard icon={BookOpen} label="Paid Courses" value={String(paidCourses.length)} color="gradient-bg" />
+        <StatCard icon={BookOpen} label="Available Courses" value={String(dashboardCourses.length)} color="gradient-bg" />
         <StatCard icon={Trophy} label="Avg Progress" value={`${avgProgress}%`} color="bg-accent" />
         <StatCard icon={Clock} label="Live Classes" value={String(liveCount)} color="bg-destructive" />
       </div>
@@ -118,19 +155,19 @@ const Dashboard = () => {
       <div>
         <h2 className="text-xl font-bold font-display text-foreground mb-4">My Courses</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {coursesLoading ? (
+          {isDashboardLoading ? (
             <div className="col-span-full">
-              <LoadingScreen message="Loading your courses..." fullScreen={false} />
+              <LoadingScreen message="Loading courses from Firebase..." fullScreen={false} />
             </div>
-          ) : paidCourses.length === 0 ? (
+          ) : dashboardCourses.length === 0 ? (
             <div className="col-span-full flex flex-col items-center justify-center py-12 text-center">
-              <p className="text-muted-foreground mb-4">No paid courses yet. Explore our course catalog!</p>
+              <p className="text-muted-foreground mb-4">No courses available right now. Check back shortly.</p>
               <Button asChild>
                 <a href="/courses">Browse All Courses</a>
               </Button>
             </div>
           ) : (
-            paidCourses.map((course, i) => (
+            dashboardCourses.map((course, i) => (
               <CourseCard key={course.id} course={course} index={i} />
             ))
           )}
