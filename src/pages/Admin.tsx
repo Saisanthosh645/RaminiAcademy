@@ -19,8 +19,8 @@ import {
   updateUserInFirebase,
   createUserProfileInFirebase,
 } from "@/firebase/migration";
-import type { Course, User, CourseProgress } from "@/types/firebase";
-import { Loader2, Save, RefreshCw, Link, Calendar, Users, BookOpen, Plus, Edit2, Trash2, UserPlus, CheckCircle2 } from "lucide-react";
+import type { Course, User, CourseProgress, ScheduleItem, Note, Announcement, SyllabusItem, QuizQuestion } from "@/types/firebase";
+import { Loader2, Save, RefreshCw, Link, Calendar, Users, BookOpen, Plus, Edit2, Trash2, UserPlus, CheckCircle2, Video, FileText, Megaphone } from "lucide-react";
 import CourseEditor from "@/components/CourseEditor";
 import { onSnapshot } from "firebase/firestore";
 import { usersCollection } from "@/firebase/firestore";
@@ -62,10 +62,32 @@ const Admin = () => {
   const [manualProgressByUser, setManualProgressByUser] = useState<Record<string, number>>({});
   
   // Edit state
-  const [editingSchedule, setEditingSchedule] = useState<any>(null);
-  const [editingSyllabus, setEditingSyllabus] = useState<any>(null);
-  const [editingQuestion, setEditingQuestion] = useState<any>(null);
+  const [editingSchedule, setEditingSchedule] = useState<ScheduleItem | null>(null);
+  const [editingSyllabus, setEditingSyllabus] = useState<SyllabusItem | null>(null);
+  const [editingQuestion, setEditingQuestion] = useState<QuizQuestion | null>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const [newScheduleItem, setNewScheduleItem] = useState<Omit<ScheduleItem, "id">>({
+    topic: "",
+    date: "",
+    time: "",
+    status: "upcoming",
+    meetLink: "",
+    recordingUrl: "",
+  });
+  const [newNote, setNewNote] = useState<Omit<Note, "id">>({
+    title: "",
+    description: "",
+    fileUrl: "",
+    type: "pdf",
+  });
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
+  const [newAnnouncement, setNewAnnouncement] = useState<Omit<Announcement, "id">>({
+    title: "",
+    message: "",
+    date: new Date().toISOString().slice(0, 10),
+    priority: "normal",
+  });
+  const [editingAnnouncementId, setEditingAnnouncementId] = useState<string | null>(null);
 
   // Allow access to admin users (can be expanded)
   const adminEmails = [
@@ -81,6 +103,14 @@ const Admin = () => {
       loadCourses();
     }
   }, [isAdmin]);
+
+  useEffect(() => {
+    if (!selectedCourse) return;
+    const freshSelected = courses.find((course) => course.id === selectedCourse.id);
+    if (freshSelected) {
+      setSelectedCourse(freshSelected);
+    }
+  }, [courses, selectedCourse]);
 
   useEffect(() => {
     if (authLoading || !isAdmin) {
@@ -118,7 +148,7 @@ const Admin = () => {
             setUsersError(null);
             setUsersLoading(false);
           },
-          (error: any) => {
+          (error: unknown) => {
             console.error("Error syncing users:", error);
             if (!isMounted) return;
             setUsers([]);
@@ -128,7 +158,7 @@ const Admin = () => {
             setUsersLoading(false);
           }
         );
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error("Failed to initialize users sync:", error);
         if (!isMounted) return;
         setUsers([]);
@@ -150,12 +180,7 @@ const Admin = () => {
   const loadCourses = async () => {
     setLoading(true);
     const firebaseCourses = await getAllCoursesFromFirebase();
-    if (firebaseCourses.length === 0) {
-      const { courses: localCourses } = await import("@/firebase/seedCourses");
-      setCourses(localCourses);
-    } else {
-      setCourses(firebaseCourses);
-    }
+    setCourses(firebaseCourses);
     setLoading(false);
   };
 
@@ -197,7 +222,7 @@ const Admin = () => {
     setLoading(false);
   };
 
-  const handleUpdateCourse = async (courseId: string, updates: any) => {
+  const handleUpdateCourse = async (courseId: string, updates: Partial<Course>) => {
     const result = await updateCourseInFirebase(courseId, updates);
     if (result.success) {
       toast({
@@ -430,10 +455,12 @@ const Admin = () => {
   };
 
   // Edit handlers
-  const handleEditSchedule = (item: any) => {
+  const handleEditSchedule = (item: ScheduleItem) => {
     setEditingSchedule({ ...item });
     setShowEditDialog(true);
   };
+
+  const makeId = (prefix: string) => `${prefix}-${Date.now()}`;
 
   const handleSaveSchedule = () => {
     if (!selectedCourse || !editingSchedule) return;
@@ -453,7 +480,41 @@ const Admin = () => {
     });
   };
 
-  const handleEditSyllabus = (item: any) => {
+  const handleAddScheduleSession = async () => {
+    if (!selectedCourse) {
+      toast({ title: "Select a course", description: "Choose a course first.", variant: "destructive" });
+      return;
+    }
+
+    if (!newScheduleItem.topic.trim() || !newScheduleItem.date || !newScheduleItem.time) {
+      toast({ title: "Missing fields", description: "Topic, date and time are required.", variant: "destructive" });
+      return;
+    }
+
+    const nextSchedule: ScheduleItem[] = [
+      ...(selectedCourse.schedule || []),
+      {
+        id: makeId("class"),
+        topic: newScheduleItem.topic.trim(),
+        date: newScheduleItem.date,
+        time: newScheduleItem.time,
+        status: newScheduleItem.status,
+        meetLink: newScheduleItem.meetLink?.trim() || undefined,
+        recordingUrl: newScheduleItem.recordingUrl?.trim() || undefined,
+      },
+    ];
+
+    await handleUpdateCourse(selectedCourse.id, { schedule: nextSchedule });
+    setNewScheduleItem({ topic: "", date: "", time: "", status: "upcoming", meetLink: "", recordingUrl: "" });
+  };
+
+  const handleDeleteScheduleSession = async (sessionId: string) => {
+    if (!selectedCourse) return;
+    const nextSchedule = (selectedCourse.schedule || []).filter((session) => session.id !== sessionId);
+    await handleUpdateCourse(selectedCourse.id, { schedule: nextSchedule });
+  };
+
+  const handleEditSyllabus = (item: SyllabusItem) => {
     setEditingSyllabus({ ...item });
     setShowEditDialog(true);
   };
@@ -475,7 +536,7 @@ const Admin = () => {
     });
   };
 
-  const handleEditQuestion = (item: any) => {
+  const handleEditQuestion = (item: QuizQuestion) => {
     setEditingQuestion({ ...item });
     setShowEditDialog(true);
   };
@@ -496,6 +557,118 @@ const Admin = () => {
       title: "Question Updated",
       description: "Quiz question has been updated successfully",
     });
+  };
+
+  const resetNoteForm = () => {
+    setEditingNoteId(null);
+    setNewNote({ title: "", description: "", fileUrl: "", type: "pdf" });
+  };
+
+  const handleSaveNote = async () => {
+    if (!selectedCourse) {
+      toast({ title: "Select a course", description: "Choose a course first.", variant: "destructive" });
+      return;
+    }
+    if (!newNote.title.trim() || !newNote.fileUrl.trim()) {
+      toast({ title: "Missing fields", description: "Note title and URL are required.", variant: "destructive" });
+      return;
+    }
+
+    const notePayload: Note = {
+      id: editingNoteId || makeId("note"),
+      title: newNote.title.trim(),
+      description: newNote.description.trim(),
+      fileUrl: newNote.fileUrl.trim(),
+      type: newNote.type,
+    };
+
+    const existingNotes = selectedCourse.notes || [];
+    const nextNotes = editingNoteId
+      ? existingNotes.map((note) => (note.id === editingNoteId ? notePayload : note))
+      : [...existingNotes, notePayload];
+
+    await handleUpdateCourse(selectedCourse.id, { notes: nextNotes });
+    toast({ title: editingNoteId ? "Note updated" : "Note added", description: "Course notes have been saved." });
+    resetNoteForm();
+  };
+
+  const handleEditNote = (note: Note) => {
+    setEditingNoteId(note.id);
+    setNewNote({
+      title: note.title,
+      description: note.description,
+      fileUrl: note.fileUrl,
+      type: note.type,
+    });
+  };
+
+  const handleDeleteNote = async (noteId: string) => {
+    if (!selectedCourse) return;
+    const nextNotes = (selectedCourse.notes || []).filter((note) => note.id !== noteId);
+    await handleUpdateCourse(selectedCourse.id, { notes: nextNotes });
+    if (editingNoteId === noteId) resetNoteForm();
+    toast({ title: "Note deleted", description: "Course note removed successfully." });
+  };
+
+  const resetAnnouncementForm = () => {
+    setEditingAnnouncementId(null);
+    setNewAnnouncement({
+      title: "",
+      message: "",
+      date: new Date().toISOString().slice(0, 10),
+      priority: "normal",
+    });
+  };
+
+  const handleSaveAnnouncement = async () => {
+    if (!selectedCourse) {
+      toast({ title: "Select a course", description: "Choose a course first.", variant: "destructive" });
+      return;
+    }
+    if (!newAnnouncement.title.trim() || !newAnnouncement.message.trim()) {
+      toast({ title: "Missing fields", description: "Announcement title and message are required.", variant: "destructive" });
+      return;
+    }
+
+    const announcementPayload: Announcement = {
+      id: editingAnnouncementId || makeId("ann"),
+      title: newAnnouncement.title.trim(),
+      message: newAnnouncement.message.trim(),
+      date: newAnnouncement.date || new Date().toISOString().slice(0, 10),
+      priority: newAnnouncement.priority,
+    };
+
+    const existingAnnouncements = selectedCourse.announcements || [];
+    const nextAnnouncements = editingAnnouncementId
+      ? existingAnnouncements.map((announcement) =>
+          announcement.id === editingAnnouncementId ? announcementPayload : announcement
+        )
+      : [...existingAnnouncements, announcementPayload];
+
+    await handleUpdateCourse(selectedCourse.id, { announcements: nextAnnouncements });
+    toast({
+      title: editingAnnouncementId ? "Announcement updated" : "Announcement added",
+      description: "Course announcement saved successfully.",
+    });
+    resetAnnouncementForm();
+  };
+
+  const handleEditAnnouncement = (announcement: Announcement) => {
+    setEditingAnnouncementId(announcement.id);
+    setNewAnnouncement({
+      title: announcement.title,
+      message: announcement.message,
+      date: announcement.date,
+      priority: announcement.priority,
+    });
+  };
+
+  const handleDeleteAnnouncement = async (announcementId: string) => {
+    if (!selectedCourse) return;
+    const nextAnnouncements = (selectedCourse.announcements || []).filter((announcement) => announcement.id !== announcementId);
+    await handleUpdateCourse(selectedCourse.id, { announcements: nextAnnouncements });
+    if (editingAnnouncementId === announcementId) resetAnnouncementForm();
+    toast({ title: "Announcement deleted", description: "Announcement removed successfully." });
   };
 
   if (!isAdmin) {
@@ -543,11 +716,12 @@ const Admin = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6 lg:grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7 lg:grid-cols-7">
             <TabsTrigger value="dashboard" className="text-xs">Dashboard</TabsTrigger>
             <TabsTrigger value="courses" className="text-xs">Courses</TabsTrigger>
             <TabsTrigger value="syllabus" className="text-xs">Syllabus</TabsTrigger>
             <TabsTrigger value="schedules" className="text-xs">Schedules</TabsTrigger>
+            <TabsTrigger value="content" className="text-xs">Content</TabsTrigger>
             <TabsTrigger value="quizzes" className="text-xs">Quizzes</TabsTrigger>
             <TabsTrigger value="users" className="text-xs">Users</TabsTrigger>
           </TabsList>
@@ -874,6 +1048,8 @@ const Admin = () => {
                             <th className="px-4 py-2 text-left">Date</th>
                             <th className="px-4 py-2 text-left">Time</th>
                             <th className="px-4 py-2 text-left">Zoho Webinar Link</th>
+                            <th className="px-4 py-2 text-left">Recording</th>
+                            <th className="px-4 py-2 text-left">Status</th>
                             <th className="px-4 py-2 text-center">Actions</th>
                           </tr>
                         </thead>
@@ -884,24 +1060,318 @@ const Admin = () => {
                               <td className="px-4 py-2">{item.date}</td>
                               <td className="px-4 py-2">{item.time}</td>
                               <td className="px-4 py-2 text-xs truncate">{item.meetLink}</td>
+                              <td className="px-4 py-2 text-xs truncate">{item.recordingUrl || "-"}</td>
+                              <td className="px-4 py-2"><Badge variant="outline" className="text-xs">{item.status}</Badge></td>
                               <td className="px-4 py-2 text-center">
-                                <Button size="sm" variant="ghost" onClick={() => handleEditSchedule(item)}>
-                                  <Edit2 className="w-3 h-3" />
-                                </Button>
+                                <div className="flex items-center justify-center gap-1">
+                                  <Button size="sm" variant="ghost" onClick={() => handleEditSchedule(item)}>
+                                    <Edit2 className="w-3 h-3" />
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => handleDeleteScheduleSession(item.id)}
+                                    disabled={loading}
+                                  >
+                                    <Trash2 className="w-3 h-3 text-destructive" />
+                                  </Button>
+                                </div>
                               </td>
                             </tr>
                           ))}
                         </tbody>
                       </table>
                     </div>
-                    <Button className="w-full gap-2">
-                      <Plus className="w-4 h-4" />
-                      Add Class Session
-                    </Button>
+                    <Card className="bg-muted/20">
+                      <CardHeader>
+                        <CardTitle className="text-base">Add Class Session</CardTitle>
+                      </CardHeader>
+                      <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                        <Input
+                          placeholder="Class topic"
+                          value={newScheduleItem.topic}
+                          onChange={(e) => setNewScheduleItem((prev) => ({ ...prev, topic: e.target.value }))}
+                        />
+                        <Input
+                          type="date"
+                          value={newScheduleItem.date}
+                          onChange={(e) => setNewScheduleItem((prev) => ({ ...prev, date: e.target.value }))}
+                        />
+                        <Input
+                          type="time"
+                          value={newScheduleItem.time}
+                          onChange={(e) => setNewScheduleItem((prev) => ({ ...prev, time: e.target.value }))}
+                        />
+                        <Input
+                          placeholder="Zoho Webinar link"
+                          value={newScheduleItem.meetLink || ""}
+                          onChange={(e) => setNewScheduleItem((prev) => ({ ...prev, meetLink: e.target.value }))}
+                        />
+                        <Input
+                          placeholder="Recording URL (optional)"
+                          value={newScheduleItem.recordingUrl || ""}
+                          onChange={(e) => setNewScheduleItem((prev) => ({ ...prev, recordingUrl: e.target.value }))}
+                        />
+                        <select
+                          value={newScheduleItem.status}
+                          onChange={(e) =>
+                            setNewScheduleItem((prev) => ({
+                              ...prev,
+                              status: e.target.value as ScheduleItem["status"],
+                            }))
+                          }
+                          className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+                        >
+                          <option value="upcoming">upcoming</option>
+                          <option value="live">live</option>
+                          <option value="completed">completed</option>
+                        </select>
+                        <Button className="md:col-span-2 lg:col-span-3 gap-2" onClick={handleAddScheduleSession} disabled={loading}>
+                          <Plus className="w-4 h-4" />
+                          Add Class Session
+                        </Button>
+                      </CardContent>
+                    </Card>
                   </div>
                 ) : (
                   <div className="text-center py-8">
                     <p className="text-muted-foreground mb-4">Select a course above to edit schedules</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Content Tab */}
+          <TabsContent value="content" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Manage Recordings, Notes & Announcements</CardTitle>
+                <p className="text-sm text-muted-foreground mt-2">Create, edit, and remove course content from one place</p>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {courses.length > 0 && (
+                  <div>
+                    <Label className="text-sm font-semibold mb-2 block">Select Course</Label>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                      {courses.map((course) => (
+                        <Button
+                          key={course.id}
+                          variant={selectedCourse?.id === course.id ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => {
+                            setSelectedCourse(course);
+                            resetNoteForm();
+                            resetAnnouncementForm();
+                          }}
+                          className="text-xs"
+                        >
+                          {course.title.substring(0, 15)}...
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {!selectedCourse ? (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">Select a course above to manage content.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    <p className="font-semibold">Editing content for: {selectedCourse.title}</p>
+
+                    <Card className="bg-muted/20">
+                      <CardHeader>
+                        <CardTitle className="text-base flex items-center gap-2">
+                          <Video className="w-4 h-4" />
+                          Recordings
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-2">
+                        {(selectedCourse.schedule || []).length === 0 ? (
+                          <p className="text-sm text-muted-foreground">No class sessions available.</p>
+                        ) : (
+                          selectedCourse.schedule.map((session) => (
+                            <div key={session.id} className="rounded-md border p-3 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2">
+                              <div>
+                                <p className="font-medium text-sm">{session.topic}</p>
+                                <p className="text-xs text-muted-foreground">{session.date} • {session.time} • {session.status}</p>
+                              </div>
+                              <div className="text-xs">
+                                {session.recordingUrl ? (
+                                  <a href={session.recordingUrl} target="_blank" rel="noreferrer" className="text-primary underline">
+                                    Open recording
+                                  </a>
+                                ) : (
+                                  <span className="text-muted-foreground">No recording URL yet (add/edit in Schedules tab)</span>
+                                )}
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </CardContent>
+                    </Card>
+
+                    <Card className="bg-muted/20">
+                      <CardHeader>
+                        <CardTitle className="text-base flex items-center gap-2">
+                          <FileText className="w-4 h-4" />
+                          Notes
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <Input
+                            placeholder="Note title"
+                            value={newNote.title}
+                            onChange={(e) => setNewNote((prev) => ({ ...prev, title: e.target.value }))}
+                          />
+                          <Input
+                            placeholder="File URL"
+                            value={newNote.fileUrl}
+                            onChange={(e) => setNewNote((prev) => ({ ...prev, fileUrl: e.target.value }))}
+                          />
+                          <Input
+                            placeholder="Description"
+                            value={newNote.description}
+                            onChange={(e) => setNewNote((prev) => ({ ...prev, description: e.target.value }))}
+                          />
+                          <select
+                            value={newNote.type}
+                            onChange={(e) => setNewNote((prev) => ({ ...prev, type: e.target.value as Note["type"] }))}
+                            className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+                          >
+                            <option value="pdf">pdf</option>
+                            <option value="doc">doc</option>
+                            <option value="ppt">ppt</option>
+                          </select>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button onClick={handleSaveNote} disabled={loading} className="gap-2">
+                            <Save className="w-4 h-4" />
+                            {editingNoteId ? "Update Note" : "Add Note"}
+                          </Button>
+                          {editingNoteId && (
+                            <Button variant="outline" onClick={resetNoteForm}>Cancel Edit</Button>
+                          )}
+                        </div>
+
+                        <div className="space-y-2">
+                          {(selectedCourse.notes || []).length === 0 ? (
+                            <p className="text-sm text-muted-foreground">No notes added yet.</p>
+                          ) : (
+                            selectedCourse.notes.map((note) => (
+                              <div key={note.id} className="rounded-md border p-3 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                                <div>
+                                  <p className="font-medium text-sm">{note.title}</p>
+                                  <p className="text-xs text-muted-foreground">{note.description || "No description"}</p>
+                                  <p className="text-xs text-muted-foreground">Type: {note.type}</p>
+                                </div>
+                                <div className="flex gap-2">
+                                  <Button size="sm" variant="outline" onClick={() => handleEditNote(note)}>
+                                    <Edit2 className="w-3 h-3 mr-1" />
+                                    Edit
+                                  </Button>
+                                  <Button size="sm" variant="destructive" onClick={() => handleDeleteNote(note.id)} disabled={loading}>
+                                    <Trash2 className="w-3 h-3 mr-1" />
+                                    Delete
+                                  </Button>
+                                </div>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="bg-muted/20">
+                      <CardHeader>
+                        <CardTitle className="text-base flex items-center gap-2">
+                          <Megaphone className="w-4 h-4" />
+                          Announcements
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <Input
+                            placeholder="Announcement title"
+                            value={newAnnouncement.title}
+                            onChange={(e) => setNewAnnouncement((prev) => ({ ...prev, title: e.target.value }))}
+                          />
+                          <Input
+                            type="date"
+                            value={newAnnouncement.date}
+                            onChange={(e) => setNewAnnouncement((prev) => ({ ...prev, date: e.target.value }))}
+                          />
+                          <Textarea
+                            placeholder="Announcement message"
+                            value={newAnnouncement.message}
+                            onChange={(e) => setNewAnnouncement((prev) => ({ ...prev, message: e.target.value }))}
+                            className="md:col-span-2"
+                            rows={2}
+                          />
+                          <select
+                            value={newAnnouncement.priority}
+                            onChange={(e) =>
+                              setNewAnnouncement((prev) => ({
+                                ...prev,
+                                priority: e.target.value as Announcement["priority"],
+                              }))
+                            }
+                            className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+                          >
+                            <option value="normal">normal</option>
+                            <option value="urgent">urgent</option>
+                          </select>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button onClick={handleSaveAnnouncement} disabled={loading} className="gap-2">
+                            <Save className="w-4 h-4" />
+                            {editingAnnouncementId ? "Update Announcement" : "Add Announcement"}
+                          </Button>
+                          {editingAnnouncementId && (
+                            <Button variant="outline" onClick={resetAnnouncementForm}>Cancel Edit</Button>
+                          )}
+                        </div>
+
+                        <div className="space-y-2">
+                          {(selectedCourse.announcements || []).length === 0 ? (
+                            <p className="text-sm text-muted-foreground">No announcements added yet.</p>
+                          ) : (
+                            selectedCourse.announcements.map((announcement) => (
+                              <div key={announcement.id} className="rounded-md border p-3 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                                <div>
+                                  <div className="flex items-center gap-2">
+                                    <p className="font-medium text-sm">{announcement.title}</p>
+                                    <Badge variant={announcement.priority === "urgent" ? "destructive" : "secondary"}>
+                                      {announcement.priority}
+                                    </Badge>
+                                  </div>
+                                  <p className="text-xs text-muted-foreground mt-1">{announcement.message}</p>
+                                  <p className="text-xs text-muted-foreground">{announcement.date}</p>
+                                </div>
+                                <div className="flex gap-2">
+                                  <Button size="sm" variant="outline" onClick={() => handleEditAnnouncement(announcement)}>
+                                    <Edit2 className="w-3 h-3 mr-1" />
+                                    Edit
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="destructive"
+                                    onClick={() => handleDeleteAnnouncement(announcement.id)}
+                                    disabled={loading}
+                                  >
+                                    <Trash2 className="w-3 h-3 mr-1" />
+                                    Delete
+                                  </Button>
+                                </div>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
                   </div>
                 )}
               </CardContent>
@@ -1162,6 +1632,29 @@ const Admin = () => {
                     onChange={(e) => setEditingSchedule({ ...editingSchedule, meetLink: e.target.value })}
                     className="mt-1"
                   />
+                </div>
+                <div>
+                  <Label htmlFor="recording" className="text-sm">Recording URL</Label>
+                  <Input
+                    id="recording"
+                    placeholder="https://..."
+                    value={editingSchedule.recordingUrl || ""}
+                    onChange={(e) => setEditingSchedule({ ...editingSchedule, recordingUrl: e.target.value })}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="status" className="text-sm">Status</Label>
+                  <select
+                    id="status"
+                    value={editingSchedule.status}
+                    onChange={(e) => setEditingSchedule({ ...editingSchedule, status: e.target.value })}
+                    className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm mt-1"
+                  >
+                    <option value="upcoming">upcoming</option>
+                    <option value="live">live</option>
+                    <option value="completed">completed</option>
+                  </select>
                 </div>
                 <div className="flex gap-2 pt-4">
                   <Button variant="outline" className="flex-1" onClick={() => setShowEditDialog(false)}>Cancel</Button>

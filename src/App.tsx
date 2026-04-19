@@ -45,16 +45,15 @@ const AppContent = () => {
     const initializeSeeding = async () => {
       // Client-side seed requires Firestore rules that allow course writes.
       // In production, seed with Admin SDK and keep rules locked down.
-      const allowClientSeed =
-        import.meta.env.VITE_ENABLE_CLIENT_COURSE_SEED === "true" || import.meta.env.DEV;
+      const allowClientSeed = import.meta.env.VITE_ENABLE_CLIENT_COURSE_SEED === "true";
+      const forceReseed = import.meta.env.VITE_FORCE_RESEED_ON_START === "true";
       if (!allowClientSeed) {
         return;
       }
       try {
         const snapshot = await getDocs(coursesCollection);
-        // In dev: always re-seed so local price/data changes propagate to Firestore instantly.
-        // In prod: only seed if Firestore is empty (first-time setup).
-        if (snapshot.empty || import.meta.env.DEV) {
+        // Seed only on first-time setup (empty DB), unless explicitly forced via env.
+        if (snapshot.empty || forceReseed) {
           await seedCourses();
         }
       } catch (error) {

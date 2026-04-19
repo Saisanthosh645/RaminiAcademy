@@ -62,7 +62,7 @@ export const Certificate = React.forwardRef<HTMLDivElement, CertificateProps>(
           {/* Main Award Body - Better Spacing */}
           <div className="flex-1 flex flex-col justify-center space-y-8 w-full px-16">
             <div className="space-y-4">
-              <p className="text-[12px] text-slate-400 uppercase tracking-[0.3em] font-bold">This globally recognized award is presented to</p>
+              <p className="text-[12px] text-slate-400 uppercase tracking-[0.3em] font-bold">This award is presented to</p>
               <h2 className="text-7xl font-bold italic text-slate-900 tracking-tight leading-none" style={{ fontFamily: "'Playfair Display', serif" }}>
                 {userName || "Student Name"}
               </h2>
