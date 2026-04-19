@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
 import { db } from "@/firebase/firestore";
 import { COLLECTIONS } from "@/firebase/collections";
 import { Button } from "@/components/ui/button";
@@ -21,14 +21,31 @@ const VerifyCertificate = () => {
       if (!certificateId) return;
 
       try {
+        const normalizedCertificateId = certificateId.trim();
         const certsRef = collection(db, COLLECTIONS.certificates);
-        const q = query(certsRef, where("id", "==", certificateId));
+        const q = query(certsRef, where("id", "==", normalizedCertificateId));
         const querySnapshot = await getDocs(q);
 
         if (querySnapshot.empty) {
-          setError("Invalid Certificate ID");
+          // Fallback: support records where the Firestore document ID is the certificate ID.
+          const certDoc = await getDoc(doc(db, COLLECTIONS.certificates, normalizedCertificateId));
+
+          if (!certDoc.exists()) {
+            setError("Invalid Certificate ID");
+          } else {
+            const certData = certDoc.data() as Certificate;
+            setCertificate({
+              ...certData,
+              id: certData.id || certDoc.id,
+            });
+          }
         } else {
-          setCertificate(querySnapshot.docs[0].data() as Certificate);
+          const certDoc = querySnapshot.docs[0];
+          const certData = certDoc.data() as Certificate;
+          setCertificate({
+            ...certData,
+            id: certData.id || certDoc.id,
+          });
         }
       } catch (err) {
         console.error("Error fetching certificate:", err);

@@ -27,6 +27,11 @@ const CertificateModal = ({ course, userProgress, userName, userId, onClose }: {
   const [isGenerating, setIsGenerating] = useState(false);
   const { downloadPDF, downloadImage, isDownloading } = useCertificateDownload();
   const { toast } = useToast();
+  const createCertificateId = () => {
+    const randomHex = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const courseCode = course.id.substring(0, 4).toUpperCase();
+    return `RAMINI-${courseCode}-${randomHex}`;
+  };
   
   useEffect(() => {
     const getOrCreateCert = async () => {
@@ -37,14 +42,40 @@ const CertificateModal = ({ course, userProgress, userName, userId, onClose }: {
         const snapshot = await getDocs(q);
 
         if (!snapshot.empty) {
-          setCertId(snapshot.docs[0].data().id);
+          const certDoc = snapshot.docs[0];
+          const certData = certDoc.data() as { id?: string; certId?: string; verificationUrl?: string };
+          const existingId = (certData.id ?? certData.certId ?? certDoc.id ?? "").trim();
+
+          if (existingId) {
+            const verificationUrl = `${window.location.origin}/verify/${existingId}`;
+
+            if (certData.verificationUrl !== verificationUrl || certData.id !== existingId) {
+              try {
+                await updateDoc(certDoc.ref, {
+                  id: existingId,
+                  verificationUrl,
+                });
+              } catch (syncError) {
+                console.warn("Certificate metadata sync skipped:", syncError);
+              }
+            }
+
+            setCertId(existingId);
+          } else {
+            const newId = createCertificateId();
+            const verificationUrl = `${window.location.origin}/verify/${newId}`;
+
+            await updateDoc(certDoc.ref, {
+              id: newId,
+              verificationUrl,
+            });
+
+            setCertId(newId);
+          }
         } else {
-          const randomHex = Math.random().toString(36).substring(2, 8).toUpperCase();
-          const courseCode = course.id.substring(0, 4).toUpperCase();
-          const newId = `RAMINI-${courseCode}-${randomHex}`;
-          
+          const newId = createCertificateId();
           const verificationUrl = `${window.location.origin}/verify/${newId}`;
-          
+
           await addDoc(certsRef, {
             id: newId,
             userId,
@@ -61,9 +92,11 @@ const CertificateModal = ({ course, userProgress, userName, userId, onClose }: {
         }
       } catch (error) {
         console.error("Error managing certificate record:", error);
+        const fallbackId = createCertificateId();
+        setCertId((current) => current || fallbackId);
         toast({
-          title: "Certificate Error",
-          description: "Failed to generate certificate ID. Please contact support.",
+          title: "Certificate Sync Warning",
+          description: "You can download now, but online verification may be unavailable for this certificate.",
           variant: "destructive",
         });
       } finally {
@@ -74,7 +107,7 @@ const CertificateModal = ({ course, userProgress, userName, userId, onClose }: {
     getOrCreateCert();
   }, [course.id, userId, userName, userProgress.quizScore]);
 
-  const verificationUrl = certId ? `${window.location.origin}/verify/${certId}` : "";
+  const verificationUrl = `${window.location.origin}/verify/${certId || "UNVERIFIED"}`;
   const grade = userProgress.quizScore >= 85 ? "Distinction" : "Pass";
   const dateStr = userProgress.certificateDate 
     ? new Date(userProgress.certificateDate).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
@@ -127,7 +160,7 @@ const CertificateModal = ({ course, userProgress, userName, userId, onClose }: {
             <Button 
               className="rounded-full gradient-bg text-primary-foreground font-bold px-12 h-14 text-lg shadow-2xl shadow-primary/40 transform hover:scale-105 active:scale-95 transition-all lg:min-w-[320px]" 
               onClick={handleDownload} 
-              disabled={isDownloading || !certId}
+              disabled={isDownloading}
             >
               {isDownloading ? (
                 <>
@@ -147,7 +180,7 @@ const CertificateModal = ({ course, userProgress, userName, userId, onClose }: {
             variant="link" 
             className="text-white/40 hover:text-white transition-colors text-sm" 
             onClick={handleDownloadImage}
-            disabled={isDownloading || !certId}
+            disabled={isDownloading}
           >
             Download as Image (Fallback)
           </Button>
