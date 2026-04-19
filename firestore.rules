@@ -30,7 +30,9 @@ service cloud.firestore {
 
     match /certificates/{certId} {
       allow read: if true;
-      allow write: if false;
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow delete: if isAdmin();
     }
 
     match /{document=**} {
